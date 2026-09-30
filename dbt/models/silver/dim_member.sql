@@ -17,9 +17,8 @@ with rows_with_key as (
         r.household_key,
         r.key_method,
         r.joined_at,
-        r.is_deleted,
         r.source_priority
-    from {{ ref('int_member_source_rows') }} as r
+    from {{ ref('int_member_live_rows') }} as r
     inner join {{ ref('xref_member') }} as x
         on
             r.source = x.source
@@ -48,7 +47,6 @@ aggregated as (
         max(case when source = 'C' then 1 else 0 end) as in_c,
         max(case when source = 'D' then 1 else 0 end) as in_d,
         min(joined_at) as first_seen_at,
-        max(case when is_deleted then 0 else 1 end) as has_live_record,
         max(health_notes) as health_notes,
         max(medical_conditions) as medical_conditions
     from rows_with_key
@@ -72,8 +70,7 @@ select
     g.in_b = 1 as in_b,
     g.in_c = 1 as in_c,
     g.in_d = 1 as in_d,
-    g.in_a + g.in_b + g.in_c + g.in_d as n_products,
-    g.has_live_record = 1 as has_live_record
+    g.in_a + g.in_b + g.in_c + g.in_d as n_products
 from ranked as p
 inner join aggregated as g
     on p.member_key = g.member_key

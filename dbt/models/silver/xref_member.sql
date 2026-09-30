@@ -12,6 +12,6 @@ select
     r.member_key as source_member_key,
     coalesce(l.email_member_key, r.member_key) as member_key,
     coalesce(l.n_email_keys, 0) > 1 as link_ambiguous
-from {{ ref('int_member_source_rows') }} as r
+from {{ ref('int_member_live_rows') }} as r
 left join {{ ref('int_link_map') }} as l
     on r.link_key = l.link_key

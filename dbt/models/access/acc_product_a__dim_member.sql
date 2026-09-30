@@ -13,7 +13,6 @@ select
     in_b,
     in_c,
     in_d,
-    n_products,
-    has_live_record
+    n_products
 from {{ ref('dim_member') }}
 where in_a

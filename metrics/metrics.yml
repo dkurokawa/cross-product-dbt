@@ -12,6 +12,8 @@
 #   comparable          false when the canonical metric has no counterpart for that product
 # The thresholds were set after looking at the first reconciliation run on the fixed seed
 # (see README); they say "this much difference is what the definition change explains".
+# B's band was widened from 15 to 50 when records deleted in their source stopped reaching
+# silver: B still counts customers it has marked deleted, the canonical metric no longer does.
 version: 1
 
 metrics:
@@ -48,7 +50,7 @@ metrics:
         definition: Created a booking in the 28 days (attendance not needed, cancellations count).
         expected_direction: higher
         direction_tolerance_pct: 10
-        threshold_pct: 15
+        threshold_pct: 50
       - product: C
         reported_as: active_members
         definition: Holds a contract on the last day of the month (paused included).

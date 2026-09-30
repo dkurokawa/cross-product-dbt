@@ -75,11 +75,6 @@ models:
         config:
           meta:
             pii: none
-      - name: has_live_record
-        description: "True if at least one product still holds a non-deleted record of the person."
-        config:
-          meta:
-            pii: none
   - name: acc_analyst__dim_household
     description: "Role analyst: access copy of dim_household."
     columns:
@@ -503,12 +498,12 @@ models:
           meta:
             pii: none
       - name: category
-        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
-        description: "Number of members in the category."
+        description: "Number of members (records for deleted_in_source) in the category."
         config:
           meta:
             pii: none
@@ -927,11 +922,6 @@ models:
         config:
           meta:
             pii: none
-      - name: has_live_record
-        description: "True if at least one product still holds a non-deleted record of the person."
-        config:
-          meta:
-            pii: none
   - name: acc_product_a__dim_household
     description: "Role product_a: access copy of dim_household."
     columns:
@@ -1156,12 +1146,12 @@ models:
           meta:
             pii: none
       - name: category
-        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
-        description: "Number of members in the category."
+        description: "Number of members (records for deleted_in_source) in the category."
         config:
           meta:
             pii: none
@@ -1580,11 +1570,6 @@ models:
         config:
           meta:
             pii: none
-      - name: has_live_record
-        description: "True if at least one product still holds a non-deleted record of the person."
-        config:
-          meta:
-            pii: none
   - name: acc_product_b__dim_household
     description: "Role product_b: access copy of dim_household."
     columns:
@@ -1872,12 +1857,12 @@ models:
           meta:
             pii: none
       - name: category
-        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
-        description: "Number of members in the category."
+        description: "Number of members (records for deleted_in_source) in the category."
         config:
           meta:
             pii: none
@@ -2296,11 +2281,6 @@ models:
         config:
           meta:
             pii: none
-      - name: has_live_record
-        description: "True if at least one product still holds a non-deleted record of the person."
-        config:
-          meta:
-            pii: none
   - name: acc_product_c__dim_household
     description: "Role product_c: access copy of dim_household."
     columns:
@@ -2608,12 +2588,12 @@ models:
           meta:
             pii: none
       - name: category
-        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
-        description: "Number of members in the category."
+        description: "Number of members (records for deleted_in_source) in the category."
         config:
           meta:
             pii: none
@@ -3032,11 +3012,6 @@ models:
         config:
           meta:
             pii: none
-      - name: has_live_record
-        description: "True if at least one product still holds a non-deleted record of the person."
-        config:
-          meta:
-            pii: none
   - name: acc_product_d__dim_household
     description: "Role product_d: access copy of dim_household."
     columns:
@@ -3261,12 +3236,12 @@ models:
           meta:
             pii: none
       - name: category
-        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
-        description: "Number of members in the category."
+        description: "Number of members (records for deleted_in_source) in the category."
         config:
           meta:
             pii: none
@@ -3846,12 +3821,12 @@ models:
           meta:
             pii: none
       - name: category
-        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
-        description: "Number of members in the category."
+        description: "Number of members (records for deleted_in_source) in the category."
         config:
           meta:
             pii: none
@@ -4280,11 +4255,6 @@ models:
         config:
           meta:
             pii: none
-      - name: has_live_record
-        description: "True if at least one product still holds a non-deleted record of the person."
-        config:
-          meta:
-            pii: none
   - name: acc_privacy_officer__dim_household
     description: "Role privacy_officer: access copy of dim_household."
     columns:
@@ -4708,12 +4678,12 @@ models:
           meta:
             pii: none
       - name: category
-        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
-        description: "Number of members in the category."
+        description: "Number of members (records for deleted_in_source) in the category."
         config:
           meta:
             pii: none

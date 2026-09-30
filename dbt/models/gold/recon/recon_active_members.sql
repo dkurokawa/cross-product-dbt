@@ -16,7 +16,7 @@ with variants as (
         'active_customers' as reported_as,
         'higher' as expected_direction,
         10.0 as direction_tolerance_pct,
-        15.0 as threshold_pct,
+        50.0 as threshold_pct,
         true as comparable
 
     union all

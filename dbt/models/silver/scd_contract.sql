@@ -64,7 +64,7 @@ select
 from versions as v
 left join {{ ref('dim_plan') }} as p
     on v.plan_ref = p.plan_ref
-left join {{ ref('xref_member') }} as x
+inner join {{ ref('xref_member') }} as x
     on
         x.source = 'C'
         and x.source_member_id = {{ to_str('v.member_id') }}

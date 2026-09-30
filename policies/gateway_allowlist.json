@@ -27,8 +27,7 @@
             "in_b",
             "in_c",
             "in_d",
-            "n_products",
-            "has_live_record"
+            "n_products"
           ],
           "pii": {
             "member_key": "quasi",
@@ -44,8 +43,7 @@
             "in_b": "none",
             "in_c": "none",
             "in_d": "none",
-            "n_products": "none",
-            "has_live_record": "none"
+            "n_products": "none"
           },
           "descriptions": {
             "member_key": "Canonical member key: the same person in different products has the same key.",
@@ -61,8 +59,7 @@
             "in_b": "The person or household appears in product B.",
             "in_c": "The person or household appears in product C.",
             "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears.",
-            "has_live_record": "True if at least one product still holds a non-deleted record of the person."
+            "n_products": "In how many products the person appears."
           }
         },
         "dim_household": {
@@ -385,8 +382,8 @@
           },
           "descriptions": {
             "source": "Product, or ALL for the ambiguous_link count.",
-            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link.",
-            "n": "Number of members in the category."
+            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link.",
+            "n": "Number of members (records for deleted_in_source) in the category."
           }
         },
         "ingest_quality_daily": {
@@ -685,8 +682,7 @@
             "in_b",
             "in_c",
             "in_d",
-            "n_products",
-            "has_live_record"
+            "n_products"
           ],
           "pii": {
             "member_key": "quasi",
@@ -702,8 +698,7 @@
             "in_b": "none",
             "in_c": "none",
             "in_d": "none",
-            "n_products": "none",
-            "has_live_record": "none"
+            "n_products": "none"
           },
           "descriptions": {
             "member_key": "Canonical member key: the same person in different products has the same key.",
@@ -719,8 +714,7 @@
             "in_b": "The person or household appears in product B.",
             "in_c": "The person or household appears in product C.",
             "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears.",
-            "has_live_record": "True if at least one product still holds a non-deleted record of the person."
+            "n_products": "In how many products the person appears."
           }
         },
         "dim_household": {
@@ -902,8 +896,8 @@
           },
           "descriptions": {
             "source": "Product, or ALL for the ambiguous_link count.",
-            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link.",
-            "n": "Number of members in the category."
+            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link.",
+            "n": "Number of members (records for deleted_in_source) in the category."
           }
         },
         "ingest_quality_daily": {
@@ -1202,8 +1196,7 @@
             "in_b",
             "in_c",
             "in_d",
-            "n_products",
-            "has_live_record"
+            "n_products"
           ],
           "pii": {
             "member_key": "quasi",
@@ -1219,8 +1212,7 @@
             "in_b": "none",
             "in_c": "none",
             "in_d": "none",
-            "n_products": "none",
-            "has_live_record": "none"
+            "n_products": "none"
           },
           "descriptions": {
             "member_key": "Canonical member key: the same person in different products has the same key.",
@@ -1236,8 +1228,7 @@
             "in_b": "The person or household appears in product B.",
             "in_c": "The person or household appears in product C.",
             "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears.",
-            "has_live_record": "True if at least one product still holds a non-deleted record of the person."
+            "n_products": "In how many products the person appears."
           }
         },
         "dim_household": {
@@ -1464,8 +1455,8 @@
           },
           "descriptions": {
             "source": "Product, or ALL for the ambiguous_link count.",
-            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link.",
-            "n": "Number of members in the category."
+            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link.",
+            "n": "Number of members (records for deleted_in_source) in the category."
           }
         },
         "ingest_quality_daily": {
@@ -1764,8 +1755,7 @@
             "in_b",
             "in_c",
             "in_d",
-            "n_products",
-            "has_live_record"
+            "n_products"
           ],
           "pii": {
             "member_key": "quasi",
@@ -1781,8 +1771,7 @@
             "in_b": "none",
             "in_c": "none",
             "in_d": "none",
-            "n_products": "none",
-            "has_live_record": "none"
+            "n_products": "none"
           },
           "descriptions": {
             "member_key": "Canonical member key: the same person in different products has the same key.",
@@ -1798,8 +1787,7 @@
             "in_b": "The person or household appears in product B.",
             "in_c": "The person or household appears in product C.",
             "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears.",
-            "has_live_record": "True if at least one product still holds a non-deleted record of the person."
+            "n_products": "In how many products the person appears."
           }
         },
         "dim_household": {
@@ -2038,8 +2026,8 @@
           },
           "descriptions": {
             "source": "Product, or ALL for the ambiguous_link count.",
-            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link.",
-            "n": "Number of members in the category."
+            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link.",
+            "n": "Number of members (records for deleted_in_source) in the category."
           }
         },
         "ingest_quality_daily": {
@@ -2338,8 +2326,7 @@
             "in_b",
             "in_c",
             "in_d",
-            "n_products",
-            "has_live_record"
+            "n_products"
           ],
           "pii": {
             "member_key": "quasi",
@@ -2355,8 +2342,7 @@
             "in_b": "none",
             "in_c": "none",
             "in_d": "none",
-            "n_products": "none",
-            "has_live_record": "none"
+            "n_products": "none"
           },
           "descriptions": {
             "member_key": "Canonical member key: the same person in different products has the same key.",
@@ -2372,8 +2358,7 @@
             "in_b": "The person or household appears in product B.",
             "in_c": "The person or household appears in product C.",
             "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears.",
-            "has_live_record": "True if at least one product still holds a non-deleted record of the person."
+            "n_products": "In how many products the person appears."
           }
         },
         "dim_household": {
@@ -2555,8 +2540,8 @@
           },
           "descriptions": {
             "source": "Product, or ALL for the ambiguous_link count.",
-            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link.",
-            "n": "Number of members in the category."
+            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link.",
+            "n": "Number of members (records for deleted_in_source) in the category."
           }
         },
         "ingest_quality_daily": {
@@ -3024,8 +3009,8 @@
           },
           "descriptions": {
             "source": "Product, or ALL for the ambiguous_link count.",
-            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link.",
-            "n": "Number of members in the category."
+            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link.",
+            "n": "Number of members (records for deleted_in_source) in the category."
           }
         },
         "ingest_quality_daily": {
@@ -3324,8 +3309,7 @@
             "in_b",
             "in_c",
             "in_d",
-            "n_products",
-            "has_live_record"
+            "n_products"
           ],
           "pii": {
             "member_key": "quasi",
@@ -3343,8 +3327,7 @@
             "in_b": "none",
             "in_c": "none",
             "in_d": "none",
-            "n_products": "none",
-            "has_live_record": "none"
+            "n_products": "none"
           },
           "descriptions": {
             "member_key": "Canonical member key: the same person in different products has the same key.",
@@ -3362,8 +3345,7 @@
             "in_b": "The person or household appears in product B.",
             "in_c": "The person or household appears in product C.",
             "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears.",
-            "has_live_record": "True if at least one product still holds a non-deleted record of the person."
+            "n_products": "In how many products the person appears."
           }
         },
         "dim_household": {
@@ -3686,8 +3668,8 @@
           },
           "descriptions": {
             "source": "Product, or ALL for the ambiguous_link count.",
-            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link.",
-            "n": "Number of members in the category."
+            "category": "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, deleted_in_source for records deleted in their source, or ambiguous_link.",
+            "n": "Number of members (records for deleted_in_source) in the category."
           }
         },
         "ingest_quality_daily": {

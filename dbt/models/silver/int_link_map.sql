@@ -7,6 +7,6 @@ select
     link_key,
     min(case when key_method = 'email' then member_key end) as email_member_key,
     count(distinct case when key_method = 'email' then member_key end) as n_email_keys
-from {{ ref('int_member_source_rows') }}
+from {{ ref('int_member_live_rows') }}
 where link_key is not null
 group by link_key

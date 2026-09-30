@@ -130,11 +130,6 @@ models:
       meta:
         pii: none
     description: In how many products the person appears.
-  - name: has_live_record
-    config:
-      meta:
-        pii: none
-    description: True if at least one product still holds a non-deleted record of the person.
 - name: dim_household
   description: 'Households: a payer plus the people who use the service.'
   columns:
@@ -961,3 +956,94 @@ models:
       meta:
         pii: none
     description: How many distinct e-mail identities share this link_key.
+- name: int_member_live_rows
+  description: 'Member records still alive in their source: records deleted in their source (C op D, B
+    logical delete) are dropped here, so they contribute nothing downstream.'
+  columns:
+  - name: source
+    config:
+      meta:
+        pii: none
+    description: Product the record comes from (A-D).
+  - name: source_member_id
+    config:
+      meta:
+        pii: quasi
+    description: 'The product''s own member identifier (D: its derived key).'
+  - name: member_key
+    config:
+      meta:
+        pii: quasi
+    description: member_key as derived for this record.
+  - name: link_key
+    config:
+      meta:
+        pii: quasi
+    description: Hash of normalized phone and kana name; the bridge between products that know a person
+      by different identifiers.
+  - name: key_method
+    config:
+      meta:
+        pii: none
+    description: 'How member_key was derived: email, phone, phone_kana or source_local.'
+  - name: household_key
+    config:
+      meta:
+        pii: quasi
+    description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
+      for.'
+  - name: name
+    config:
+      meta:
+        pii: direct
+        mask: initial
+    description: Full name as recorded by the highest-priority product (direct personal data).
+  - name: name_kana
+    config:
+      meta:
+        pii: direct
+        mask: initial
+    description: Name in kana as recorded by the highest-priority product (direct personal data).
+  - name: email
+    config:
+      meta:
+        pii: direct
+        mask: email_domain
+    description: E-mail address as recorded by the highest-priority product (direct personal data).
+  - name: phone
+    config:
+      meta:
+        pii: direct
+        mask: phone_last4
+    description: Phone number as recorded by the highest-priority product (direct personal data).
+  - name: birth_date
+    config:
+      meta:
+        pii: direct
+        mask: birth_year
+    description: Date of birth as recorded by the source (direct personal data).
+  - name: health_notes
+    config:
+      meta:
+        pii: sensitive
+    description: Free-text injury or condition declaration from the app (sensitive).
+  - name: medical_conditions
+    config:
+      meta:
+        pii: sensitive
+    description: Free-text answers of the gym's intake questionnaire (sensitive).
+  - name: joined_at
+    config:
+      meta:
+        pii: quasi
+    description: When the person joined this product.
+  - name: is_deleted
+    config:
+      meta:
+        pii: none
+    description: True if the source marks the record deleted.
+  - name: source_priority
+    config:
+      meta:
+        pii: none
+    description: Which product wins when several know the same person (1 is highest).

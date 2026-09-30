@@ -16,7 +16,7 @@ with a_charges as (
         'tax_incl' as amount_original_basis,
         p.tax_rate
     from {{ ref('brz_a_purchase_made') }} as p
-    left join {{ ref('xref_member') }} as x
+    inner join {{ ref('xref_member') }} as x
         on
             x.source = 'A'
             and p.member_id = x.source_member_id
@@ -38,7 +38,7 @@ d_charges as (
         'ex_tax' as amount_original_basis,
         i.tax_rate
     from {{ ref('brz_d_invoices') }} as i
-    left join {{ ref('xref_member') }} as x
+    inner join {{ ref('xref_member') }} as x
         on
             x.source = 'D'
             and i.member_key = x.source_member_id
@@ -62,7 +62,7 @@ d_refunds as (
     from {{ ref('brz_d_refunds') }} as r
     left join {{ ref('brz_d_invoices') }} as i
         on r.invoice_no = i.invoice_no
-    left join {{ ref('xref_member') }} as x
+    inner join {{ ref('xref_member') }} as x
         on
             x.source = 'D'
             and i.member_key = x.source_member_id

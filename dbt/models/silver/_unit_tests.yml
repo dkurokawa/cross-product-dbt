@@ -10,7 +10,7 @@ unit_tests:
       counted as ambiguous.
     model: int_link_map
     given:
-      - input: ref('int_member_source_rows')
+      - input: ref('int_member_live_rows')
         rows:
           - {link_key: L1, key_method: email, member_key: K2}
           - {link_key: L1, key_method: email, member_key: K1}
@@ -25,7 +25,7 @@ unit_tests:
   - name: xref_marks_records_of_an_ambiguous_link
     model: xref_member
     given:
-      - input: ref('int_member_source_rows')
+      - input: ref('int_member_live_rows')
         rows:
           - {source: A, source_member_id: a1, member_key: K2, link_key: L1}
           - {source: C, source_member_id: c1, member_key: K1, link_key: L1}
@@ -67,3 +67,20 @@ unit_tests:
         - {contract_id: K1, valid_from: "2026-04-01 00:00:00+00", valid_to: "2026-04-03 00:00:00+00", is_current: false, is_deleted: false}
         - {contract_id: K1, valid_from: "2026-04-03 00:00:00+00", valid_to: "2026-04-04 00:00:00+00", is_current: false, is_deleted: true}
         - {contract_id: K1, valid_from: "2026-04-04 00:00:00+00", valid_to: null, is_current: true, is_deleted: false}
+
+  - name: records_deleted_in_their_source_are_not_live
+    description: >
+      A record deleted in its source (C op D, B logical delete) is dropped from the live rows, so
+      it contributes no attributes, flag or sensitive text downstream.
+    model: int_member_live_rows
+    given:
+      - input: ref('int_member_source_rows')
+        rows:
+          - {source: A, source_member_id: a1, is_deleted: false, medical_conditions: null}
+          - {source: C, source_member_id: c1, is_deleted: true, medical_conditions: "Asthma"}
+          - {source: C, source_member_id: c2, is_deleted: false, medical_conditions: null}
+          - {source: B, source_member_id: "T001/1", is_deleted: true, medical_conditions: null}
+    expect:
+      rows:
+        - {source: A, source_member_id: a1}
+        - {source: C, source_member_id: c2}

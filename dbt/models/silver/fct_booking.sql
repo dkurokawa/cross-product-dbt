@@ -26,7 +26,7 @@ select
     r.is_deleted,
     r.snapshot_date as as_of_snapshot
 from ranked as r
-left join {{ ref('xref_member') }} as x
+inner join {{ ref('xref_member') }} as x
     on
         x.source = 'B'
         and x.source_member_id = r.tenant_id || '/' || {{ to_str('r.member_no') }}

@@ -19,7 +19,7 @@ unioned as (
         w.duration_min,
         {{ to_str('null') }} as facility_id
     from {{ ref('brz_a_workout_completed') }} as w
-    left join {{ ref('xref_member') }} as x
+    inner join {{ ref('xref_member') }} as x
         on
             x.source = 'A'
             and w.member_id = x.source_member_id
@@ -35,7 +35,7 @@ unioned as (
         {{ to_bigint('null') }} as duration_min,
         v.facility_id
     from c_visits as v
-    left join {{ ref('xref_member') }} as x
+    inner join {{ ref('xref_member') }} as x
         on
             x.source = 'C'
             and x.source_member_id = {{ to_str('v.member_id') }}

@@ -16,7 +16,7 @@ Members who did something (workout, gym visit, attended booking) in the 30 days 
 | product | reported as | comparable | expected | threshold % | how the product defines it |
 |---|---|---|---|---|---|
 | A | `active_users` | yes | higher | 30.0 | Opened the app in the 30 days (no workout needed). |
-| B | `active_customers` | yes | higher | 15.0 | Created a booking in the 28 days (attendance not needed, cancellations count). |
+| B | `active_customers` | yes | higher | 50.0 | Created a booking in the 28 days (attendance not needed, cancellations count). |
 | C | `active_members` | yes | higher | 40.0 | Holds a contract on the last day of the month (paused included). |
 | D | `billed_customers` | yes | higher | 120.0 | Invoiced in the month (quarterly and annual plans are invoiced rarely). |
 | E | `seats_under_contract` | no | n/a | n/a | Seats sold to companies; a corporate seat is not a member. (not comparable: Corporate accounts have no member-level activity, so there is no canonical counterpart.) |

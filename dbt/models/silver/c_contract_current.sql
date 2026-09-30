@@ -15,4 +15,4 @@ select
     valid_from as last_changed_at,
     is_deleted
 from {{ ref('scd_contract') }}
-where is_current
+where is_current and not is_deleted
