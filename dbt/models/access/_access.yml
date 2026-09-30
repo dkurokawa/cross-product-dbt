@@ -6,62 +6,77 @@ models:
     description: "Role analyst: access copy of dim_member."
     columns:
       - name: member_key
+        description: "Canonical member key: the same person in different products has the same key."
         config:
           meta:
             pii: quasi
       - name: household_key
+        description: "Household of the highest-priority record."
         config:
           meta:
             pii: quasi
       - name: key_method
+        description: "How the winning record's key was derived."
         config:
           meta:
             pii: none
       - name: name_initial
+        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: name_kana_initial
+        description: "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: email_domain
+        description: "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: phone_last4
+        description: "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: birth_date_year
+        description: "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: first_seen_at
+        description: "Earliest time any product knew this person or household."
         config:
           meta:
             pii: quasi
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: n_products
+        description: "In how many products the person appears."
         config:
           meta:
             pii: none
       - name: has_live_record
+        description: "True if at least one product still holds a non-deleted record of the person."
         config:
           meta:
             pii: none
@@ -69,34 +84,42 @@ models:
     description: "Role analyst: access copy of dim_household."
     columns:
       - name: household_key
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: n_members
+        description: "Number of people in the household."
         config:
           meta:
             pii: none
       - name: is_family
+        description: "True if more than one person is in the household."
         config:
           meta:
             pii: none
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: first_seen_at
+        description: "Earliest time any member of the household was seen."
         config:
           meta:
             pii: quasi
@@ -104,42 +127,52 @@ models:
     description: "Role analyst: access copy of dim_account."
     columns:
       - name: account_key
+        description: "Stable key of a corporate account: a hash of the company name without legal-form words and spacing."
         config:
           meta:
             pii: none
       - name: company_name
+        description: "Company name as last written in the sales sheet."
         config:
           meta:
             pii: none
       - name: contact_name_initial
+        description: "Masked: only the first character of the original column. Contact person at the company (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: sales_owner
+        description: "Salesperson responsible for the account."
         config:
           meta:
             pii: quasi
       - name: seats
+        description: "Seats under contract as typed in the sales sheet; empty if the cell held a placeholder."
         config:
           meta:
             pii: none
       - name: monthly_fee_yen
+        description: "Monthly fee in yen (tax-exclusive) as typed in the sales sheet; empty if the cell held a placeholder."
         config:
           meta:
             pii: none
       - name: first_month
+        description: "First month the company appears in the sales sheet."
         config:
           meta:
             pii: none
       - name: last_month
+        description: "Last month the company appears in the sales sheet."
         config:
           meta:
             pii: none
       - name: status
+        description: "active or cancelled (mapped from the sheet's wording)."
         config:
           meta:
             pii: none
       - name: is_active
+        description: "True if the contract is running in the latest month of the sheet."
         config:
           meta:
             pii: none
@@ -147,30 +180,37 @@ models:
     description: "Role analyst: access copy of dim_plan."
     columns:
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product whose plan code this is (C or D)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "C table generation (FY2025, FY2026); empty for D."
         config:
           meta:
             pii: none
       - name: source_plan_code
+        description: "Plan code as the source writes it."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: plan_name
+        description: "Human-readable plan name."
         config:
           meta:
             pii: none
       - name: billing_period_months
+        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none
@@ -178,34 +218,42 @@ models:
     description: "Role analyst: access copy of fct_session."
     columns:
       - name: session_id
+        description: "Session identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: session_type
+        description: "workout (A) or visit (C)."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: started_at
+        description: "Start of the session (UTC)."
         config:
           meta:
             pii: none
       - name: session_date_jst
+        description: "Calendar date of the session in Tokyo time."
         config:
           meta:
             pii: none
       - name: duration_min
+        description: "Workout length in minutes (app workouts only)."
         config:
           meta:
             pii: none
       - name: facility_id
+        description: "Gym or facility code."
         config:
           meta:
             pii: none
@@ -213,50 +261,62 @@ models:
     description: "Role analyst: access copy of fct_booking."
     columns:
       - name: booking_id
+        description: "Booking identifier: tenant_id and the booking number inside the tenant."
         config:
           meta:
             pii: none
       - name: tenant_id
+        description: "Studio (tenant) identifier in product B."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: booked_at
+        description: "When the booking was created (UTC)."
         config:
           meta:
             pii: none
       - name: class_start_at
+        description: "Start of the class (UTC)."
         config:
           meta:
             pii: none
       - name: class_date_jst
+        description: "Calendar date of the class in Tokyo time."
         config:
           meta:
             pii: none
       - name: status
+        description: "booked, attended, cancelled or no_show."
         config:
           meta:
             pii: none
       - name: price_ex_tax
+        description: "Booking price without consumption tax."
         config:
           meta:
             pii: none
       - name: price_tax_incl
+        description: "Booking price including consumption tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
       - name: is_deleted
+        description: "True if B marks the booking deleted."
         config:
           meta:
             pii: none
       - name: as_of_snapshot
+        description: "Date of the B snapshot this row was taken from."
         config:
           meta:
             pii: none
@@ -264,46 +324,57 @@ models:
     description: "Role analyst: access copy of fct_payment."
     columns:
       - name: payment_id
+        description: "Invoice, refund or purchase identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: payment_type
+        description: "charge or refund."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Plan code for D charges; empty for A purchases."
         config:
           meta:
             pii: none
       - name: occurred_at
+        description: "When the money moved (UTC; for D the start of the invoice or refund day in Tokyo)."
         config:
           meta:
             pii: none
       - name: amount_ex_tax
+        description: "Amount without consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_tax_incl
+        description: "Amount including consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original
+        description: "The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D); refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original_basis
+        description: "Whether amount_original is tax_incl or ex_tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
@@ -311,26 +382,32 @@ models:
     description: "Role analyst: access copy of fct_activity."
     columns:
       - name: activity_id
+        description: "Identifier of the underlying session or booking."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: occurred_at
+        description: "When the activity took place (UTC)."
         config:
           meta:
             pii: none
       - name: activity_date_jst
+        description: "Calendar date of the activity in Tokyo time."
         config:
           meta:
             pii: none
       - name: activity_type
+        description: "What the member did: workout, visit or booking_attended."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
@@ -338,66 +415,82 @@ models:
     description: "Role analyst: access copy of scd_contract."
     columns:
       - name: contract_id
+        description: "Contract identifier (K25-/K26- prefix marks the table generation)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "Contract table generation: FY2025 or FY2026 (for a plan: the C generation, empty for D)."
         config:
           meta:
             pii: none
       - name: member_id
+        description: "C member id of the contract holder."
         config:
           meta:
             pii: quasi
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: monthly_fee_tax_incl
+        description: "Monthly fee including consumption tax."
         config:
           meta:
             pii: none
       - name: monthly_fee_ex_tax
+        description: "Monthly fee without consumption tax."
         config:
           meta:
             pii: none
       - name: start_date
+        description: "Contract start date."
         config:
           meta:
             pii: none
       - name: end_date
+        description: "Contract end date; empty while it runs."
         config:
           meta:
             pii: none
       - name: payer_member_id
+        description: "C member id of the payer (family plan); empty otherwise."
         config:
           meta:
             pii: quasi
       - name: status
+        description: "Contract status in C (active, paused, ended, migrated)."
         config:
           meta:
             pii: none
       - name: valid_from
+        description: "Start of this version of the contract (UTC)."
         config:
           meta:
             pii: none
       - name: valid_to
+        description: "End of this version; empty for the current version."
         config:
           meta:
             pii: none
       - name: is_current
+        description: "True for the version that is valid now (valid_to is empty)."
         config:
           meta:
             pii: none
       - name: is_deleted
+        description: "True for the version that records a delete."
         config:
           meta:
             pii: none
@@ -405,14 +498,17 @@ models:
     description: "Role analyst: access copy of identity_quality."
     columns:
       - name: source
+        description: "Product, or ALL for the ambiguous_link count."
         config:
           meta:
             pii: none
       - name: category
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
+        description: "Number of members in the category."
         config:
           meta:
             pii: none
@@ -420,30 +516,37 @@ models:
     description: "Role analyst: access copy of ingest_quality_daily."
     columns:
       - name: source
+        description: "Product the files come from (A-E)."
         config:
           meta:
             pii: none
       - name: dataset
+        description: "Dataset name inside the source (for example invoices)."
         config:
           meta:
             pii: none
       - name: partition_date
+        description: "Delivery partition: a day, or a month for the sales sheet."
         config:
           meta:
             pii: none
       - name: files_landed
+        description: "Files accepted by the landing step."
         config:
           meta:
             pii: none
       - name: rows_landed
+        description: "Rows in the accepted files."
         config:
           meta:
             pii: none
       - name: files_quarantined
+        description: "Files moved to quarantine."
         config:
           meta:
             pii: none
       - name: violations
+        description: "Contract violations found in the quarantined files."
         config:
           meta:
             pii: none
@@ -451,14 +554,17 @@ models:
     description: "Role analyst: access copy of metric_active_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: active_members
+        description: "Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month."
         config:
           meta:
             pii: none
@@ -466,14 +572,17 @@ models:
     description: "Role analyst: access copy of metric_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: churned_members
+        description: "Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end."
         config:
           meta:
             pii: none
@@ -481,14 +590,17 @@ models:
     description: "Role analyst: access copy of metric_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: net_revenue
+        description: "Tax-inclusive money received minus refunds, by calendar month (Tokyo time)."
         config:
           meta:
             pii: none
@@ -496,14 +608,17 @@ models:
     description: "Role analyst: access copy of metric_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         config:
           meta:
             pii: none
@@ -511,46 +626,57 @@ models:
     description: "Role analyst: access copy of recon_active_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -558,46 +684,57 @@ models:
     description: "Role analyst: access copy of recon_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -605,46 +742,57 @@ models:
     description: "Role analyst: access copy of recon_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -652,46 +800,57 @@ models:
     description: "Role analyst: access copy of recon_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -699,62 +858,77 @@ models:
     description: "Role product_a: access copy of dim_member."
     columns:
       - name: member_key
+        description: "Canonical member key: the same person in different products has the same key."
         config:
           meta:
             pii: quasi
       - name: household_key
+        description: "Household of the highest-priority record."
         config:
           meta:
             pii: quasi
       - name: key_method
+        description: "How the winning record's key was derived."
         config:
           meta:
             pii: none
       - name: name_initial
+        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: name_kana_initial
+        description: "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: email_domain
+        description: "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: phone_last4
+        description: "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: birth_date_year
+        description: "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: first_seen_at
+        description: "Earliest time any product knew this person or household."
         config:
           meta:
             pii: quasi
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: n_products
+        description: "In how many products the person appears."
         config:
           meta:
             pii: none
       - name: has_live_record
+        description: "True if at least one product still holds a non-deleted record of the person."
         config:
           meta:
             pii: none
@@ -762,34 +936,42 @@ models:
     description: "Role product_a: access copy of dim_household."
     columns:
       - name: household_key
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: n_members
+        description: "Number of people in the household."
         config:
           meta:
             pii: none
       - name: is_family
+        description: "True if more than one person is in the household."
         config:
           meta:
             pii: none
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: first_seen_at
+        description: "Earliest time any member of the household was seen."
         config:
           meta:
             pii: quasi
@@ -797,30 +979,37 @@ models:
     description: "Role product_a: access copy of dim_plan."
     columns:
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product whose plan code this is (C or D)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "C table generation (FY2025, FY2026); empty for D."
         config:
           meta:
             pii: none
       - name: source_plan_code
+        description: "Plan code as the source writes it."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: plan_name
+        description: "Human-readable plan name."
         config:
           meta:
             pii: none
       - name: billing_period_months
+        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none
@@ -828,34 +1017,42 @@ models:
     description: "Role product_a: access copy of fct_session."
     columns:
       - name: session_id
+        description: "Session identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: session_type
+        description: "workout (A) or visit (C)."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: started_at
+        description: "Start of the session (UTC)."
         config:
           meta:
             pii: none
       - name: session_date_jst
+        description: "Calendar date of the session in Tokyo time."
         config:
           meta:
             pii: none
       - name: duration_min
+        description: "Workout length in minutes (app workouts only)."
         config:
           meta:
             pii: none
       - name: facility_id
+        description: "Gym or facility code."
         config:
           meta:
             pii: none
@@ -863,46 +1060,57 @@ models:
     description: "Role product_a: access copy of fct_payment."
     columns:
       - name: payment_id
+        description: "Invoice, refund or purchase identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: payment_type
+        description: "charge or refund."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Plan code for D charges; empty for A purchases."
         config:
           meta:
             pii: none
       - name: occurred_at
+        description: "When the money moved (UTC; for D the start of the invoice or refund day in Tokyo)."
         config:
           meta:
             pii: none
       - name: amount_ex_tax
+        description: "Amount without consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_tax_incl
+        description: "Amount including consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original
+        description: "The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D); refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original_basis
+        description: "Whether amount_original is tax_incl or ex_tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
@@ -910,26 +1118,32 @@ models:
     description: "Role product_a: access copy of fct_activity."
     columns:
       - name: activity_id
+        description: "Identifier of the underlying session or booking."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: occurred_at
+        description: "When the activity took place (UTC)."
         config:
           meta:
             pii: none
       - name: activity_date_jst
+        description: "Calendar date of the activity in Tokyo time."
         config:
           meta:
             pii: none
       - name: activity_type
+        description: "What the member did: workout, visit or booking_attended."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
@@ -937,14 +1151,17 @@ models:
     description: "Role product_a: access copy of identity_quality."
     columns:
       - name: source
+        description: "Product, or ALL for the ambiguous_link count."
         config:
           meta:
             pii: none
       - name: category
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
+        description: "Number of members in the category."
         config:
           meta:
             pii: none
@@ -952,30 +1169,37 @@ models:
     description: "Role product_a: access copy of ingest_quality_daily."
     columns:
       - name: source
+        description: "Product the files come from (A-E)."
         config:
           meta:
             pii: none
       - name: dataset
+        description: "Dataset name inside the source (for example invoices)."
         config:
           meta:
             pii: none
       - name: partition_date
+        description: "Delivery partition: a day, or a month for the sales sheet."
         config:
           meta:
             pii: none
       - name: files_landed
+        description: "Files accepted by the landing step."
         config:
           meta:
             pii: none
       - name: rows_landed
+        description: "Rows in the accepted files."
         config:
           meta:
             pii: none
       - name: files_quarantined
+        description: "Files moved to quarantine."
         config:
           meta:
             pii: none
       - name: violations
+        description: "Contract violations found in the quarantined files."
         config:
           meta:
             pii: none
@@ -983,14 +1207,17 @@ models:
     description: "Role product_a: access copy of metric_active_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: active_members
+        description: "Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month."
         config:
           meta:
             pii: none
@@ -998,14 +1225,17 @@ models:
     description: "Role product_a: access copy of metric_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: churned_members
+        description: "Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end."
         config:
           meta:
             pii: none
@@ -1013,14 +1243,17 @@ models:
     description: "Role product_a: access copy of metric_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: net_revenue
+        description: "Tax-inclusive money received minus refunds, by calendar month (Tokyo time)."
         config:
           meta:
             pii: none
@@ -1028,14 +1261,17 @@ models:
     description: "Role product_a: access copy of metric_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         config:
           meta:
             pii: none
@@ -1043,46 +1279,57 @@ models:
     description: "Role product_a: access copy of recon_active_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1090,46 +1337,57 @@ models:
     description: "Role product_a: access copy of recon_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1137,46 +1395,57 @@ models:
     description: "Role product_a: access copy of recon_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1184,46 +1453,57 @@ models:
     description: "Role product_a: access copy of recon_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1231,62 +1511,77 @@ models:
     description: "Role product_b: access copy of dim_member."
     columns:
       - name: member_key
+        description: "Canonical member key: the same person in different products has the same key."
         config:
           meta:
             pii: quasi
       - name: household_key
+        description: "Household of the highest-priority record."
         config:
           meta:
             pii: quasi
       - name: key_method
+        description: "How the winning record's key was derived."
         config:
           meta:
             pii: none
       - name: name_initial
+        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: name_kana_initial
+        description: "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: email_domain
+        description: "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: phone_last4
+        description: "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: birth_date_year
+        description: "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: first_seen_at
+        description: "Earliest time any product knew this person or household."
         config:
           meta:
             pii: quasi
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: n_products
+        description: "In how many products the person appears."
         config:
           meta:
             pii: none
       - name: has_live_record
+        description: "True if at least one product still holds a non-deleted record of the person."
         config:
           meta:
             pii: none
@@ -1294,34 +1589,42 @@ models:
     description: "Role product_b: access copy of dim_household."
     columns:
       - name: household_key
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: n_members
+        description: "Number of people in the household."
         config:
           meta:
             pii: none
       - name: is_family
+        description: "True if more than one person is in the household."
         config:
           meta:
             pii: none
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: first_seen_at
+        description: "Earliest time any member of the household was seen."
         config:
           meta:
             pii: quasi
@@ -1329,30 +1632,37 @@ models:
     description: "Role product_b: access copy of dim_plan."
     columns:
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product whose plan code this is (C or D)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "C table generation (FY2025, FY2026); empty for D."
         config:
           meta:
             pii: none
       - name: source_plan_code
+        description: "Plan code as the source writes it."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: plan_name
+        description: "Human-readable plan name."
         config:
           meta:
             pii: none
       - name: billing_period_months
+        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none
@@ -1360,34 +1670,42 @@ models:
     description: "Role product_b: access copy of fct_session."
     columns:
       - name: session_id
+        description: "Session identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: session_type
+        description: "workout (A) or visit (C)."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: started_at
+        description: "Start of the session (UTC)."
         config:
           meta:
             pii: none
       - name: session_date_jst
+        description: "Calendar date of the session in Tokyo time."
         config:
           meta:
             pii: none
       - name: duration_min
+        description: "Workout length in minutes (app workouts only)."
         config:
           meta:
             pii: none
       - name: facility_id
+        description: "Gym or facility code."
         config:
           meta:
             pii: none
@@ -1395,50 +1713,62 @@ models:
     description: "Role product_b: access copy of fct_booking."
     columns:
       - name: booking_id
+        description: "Booking identifier: tenant_id and the booking number inside the tenant."
         config:
           meta:
             pii: none
       - name: tenant_id
+        description: "Studio (tenant) identifier in product B."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: booked_at
+        description: "When the booking was created (UTC)."
         config:
           meta:
             pii: none
       - name: class_start_at
+        description: "Start of the class (UTC)."
         config:
           meta:
             pii: none
       - name: class_date_jst
+        description: "Calendar date of the class in Tokyo time."
         config:
           meta:
             pii: none
       - name: status
+        description: "booked, attended, cancelled or no_show."
         config:
           meta:
             pii: none
       - name: price_ex_tax
+        description: "Booking price without consumption tax."
         config:
           meta:
             pii: none
       - name: price_tax_incl
+        description: "Booking price including consumption tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
       - name: is_deleted
+        description: "True if B marks the booking deleted."
         config:
           meta:
             pii: none
       - name: as_of_snapshot
+        description: "Date of the B snapshot this row was taken from."
         config:
           meta:
             pii: none
@@ -1446,46 +1776,57 @@ models:
     description: "Role product_b: access copy of fct_payment."
     columns:
       - name: payment_id
+        description: "Invoice, refund or purchase identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: payment_type
+        description: "charge or refund."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Plan code for D charges; empty for A purchases."
         config:
           meta:
             pii: none
       - name: occurred_at
+        description: "When the money moved (UTC; for D the start of the invoice or refund day in Tokyo)."
         config:
           meta:
             pii: none
       - name: amount_ex_tax
+        description: "Amount without consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_tax_incl
+        description: "Amount including consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original
+        description: "The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D); refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original_basis
+        description: "Whether amount_original is tax_incl or ex_tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
@@ -1493,26 +1834,32 @@ models:
     description: "Role product_b: access copy of fct_activity."
     columns:
       - name: activity_id
+        description: "Identifier of the underlying session or booking."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: occurred_at
+        description: "When the activity took place (UTC)."
         config:
           meta:
             pii: none
       - name: activity_date_jst
+        description: "Calendar date of the activity in Tokyo time."
         config:
           meta:
             pii: none
       - name: activity_type
+        description: "What the member did: workout, visit or booking_attended."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
@@ -1520,14 +1867,17 @@ models:
     description: "Role product_b: access copy of identity_quality."
     columns:
       - name: source
+        description: "Product, or ALL for the ambiguous_link count."
         config:
           meta:
             pii: none
       - name: category
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
+        description: "Number of members in the category."
         config:
           meta:
             pii: none
@@ -1535,30 +1885,37 @@ models:
     description: "Role product_b: access copy of ingest_quality_daily."
     columns:
       - name: source
+        description: "Product the files come from (A-E)."
         config:
           meta:
             pii: none
       - name: dataset
+        description: "Dataset name inside the source (for example invoices)."
         config:
           meta:
             pii: none
       - name: partition_date
+        description: "Delivery partition: a day, or a month for the sales sheet."
         config:
           meta:
             pii: none
       - name: files_landed
+        description: "Files accepted by the landing step."
         config:
           meta:
             pii: none
       - name: rows_landed
+        description: "Rows in the accepted files."
         config:
           meta:
             pii: none
       - name: files_quarantined
+        description: "Files moved to quarantine."
         config:
           meta:
             pii: none
       - name: violations
+        description: "Contract violations found in the quarantined files."
         config:
           meta:
             pii: none
@@ -1566,14 +1923,17 @@ models:
     description: "Role product_b: access copy of metric_active_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: active_members
+        description: "Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month."
         config:
           meta:
             pii: none
@@ -1581,14 +1941,17 @@ models:
     description: "Role product_b: access copy of metric_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: churned_members
+        description: "Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end."
         config:
           meta:
             pii: none
@@ -1596,14 +1959,17 @@ models:
     description: "Role product_b: access copy of metric_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: net_revenue
+        description: "Tax-inclusive money received minus refunds, by calendar month (Tokyo time)."
         config:
           meta:
             pii: none
@@ -1611,14 +1977,17 @@ models:
     description: "Role product_b: access copy of metric_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         config:
           meta:
             pii: none
@@ -1626,46 +1995,57 @@ models:
     description: "Role product_b: access copy of recon_active_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1673,46 +2053,57 @@ models:
     description: "Role product_b: access copy of recon_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1720,46 +2111,57 @@ models:
     description: "Role product_b: access copy of recon_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1767,46 +2169,57 @@ models:
     description: "Role product_b: access copy of recon_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -1814,62 +2227,77 @@ models:
     description: "Role product_c: access copy of dim_member."
     columns:
       - name: member_key
+        description: "Canonical member key: the same person in different products has the same key."
         config:
           meta:
             pii: quasi
       - name: household_key
+        description: "Household of the highest-priority record."
         config:
           meta:
             pii: quasi
       - name: key_method
+        description: "How the winning record's key was derived."
         config:
           meta:
             pii: none
       - name: name_initial
+        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: name_kana_initial
+        description: "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: email_domain
+        description: "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: phone_last4
+        description: "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: birth_date_year
+        description: "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: first_seen_at
+        description: "Earliest time any product knew this person or household."
         config:
           meta:
             pii: quasi
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: n_products
+        description: "In how many products the person appears."
         config:
           meta:
             pii: none
       - name: has_live_record
+        description: "True if at least one product still holds a non-deleted record of the person."
         config:
           meta:
             pii: none
@@ -1877,34 +2305,42 @@ models:
     description: "Role product_c: access copy of dim_household."
     columns:
       - name: household_key
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: n_members
+        description: "Number of people in the household."
         config:
           meta:
             pii: none
       - name: is_family
+        description: "True if more than one person is in the household."
         config:
           meta:
             pii: none
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: first_seen_at
+        description: "Earliest time any member of the household was seen."
         config:
           meta:
             pii: quasi
@@ -1912,30 +2348,37 @@ models:
     description: "Role product_c: access copy of dim_plan."
     columns:
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product whose plan code this is (C or D)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "C table generation (FY2025, FY2026); empty for D."
         config:
           meta:
             pii: none
       - name: source_plan_code
+        description: "Plan code as the source writes it."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: plan_name
+        description: "Human-readable plan name."
         config:
           meta:
             pii: none
       - name: billing_period_months
+        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none
@@ -1943,34 +2386,42 @@ models:
     description: "Role product_c: access copy of fct_session."
     columns:
       - name: session_id
+        description: "Session identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: session_type
+        description: "workout (A) or visit (C)."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: started_at
+        description: "Start of the session (UTC)."
         config:
           meta:
             pii: none
       - name: session_date_jst
+        description: "Calendar date of the session in Tokyo time."
         config:
           meta:
             pii: none
       - name: duration_min
+        description: "Workout length in minutes (app workouts only)."
         config:
           meta:
             pii: none
       - name: facility_id
+        description: "Gym or facility code."
         config:
           meta:
             pii: none
@@ -1978,46 +2429,57 @@ models:
     description: "Role product_c: access copy of fct_payment."
     columns:
       - name: payment_id
+        description: "Invoice, refund or purchase identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: payment_type
+        description: "charge or refund."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Plan code for D charges; empty for A purchases."
         config:
           meta:
             pii: none
       - name: occurred_at
+        description: "When the money moved (UTC; for D the start of the invoice or refund day in Tokyo)."
         config:
           meta:
             pii: none
       - name: amount_ex_tax
+        description: "Amount without consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_tax_incl
+        description: "Amount including consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original
+        description: "The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D); refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original_basis
+        description: "Whether amount_original is tax_incl or ex_tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
@@ -2025,26 +2487,32 @@ models:
     description: "Role product_c: access copy of fct_activity."
     columns:
       - name: activity_id
+        description: "Identifier of the underlying session or booking."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: occurred_at
+        description: "When the activity took place (UTC)."
         config:
           meta:
             pii: none
       - name: activity_date_jst
+        description: "Calendar date of the activity in Tokyo time."
         config:
           meta:
             pii: none
       - name: activity_type
+        description: "What the member did: workout, visit or booking_attended."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
@@ -2052,66 +2520,82 @@ models:
     description: "Role product_c: access copy of scd_contract."
     columns:
       - name: contract_id
+        description: "Contract identifier (K25-/K26- prefix marks the table generation)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "Contract table generation: FY2025 or FY2026 (for a plan: the C generation, empty for D)."
         config:
           meta:
             pii: none
       - name: member_id
+        description: "C member id of the contract holder."
         config:
           meta:
             pii: quasi
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: monthly_fee_tax_incl
+        description: "Monthly fee including consumption tax."
         config:
           meta:
             pii: none
       - name: monthly_fee_ex_tax
+        description: "Monthly fee without consumption tax."
         config:
           meta:
             pii: none
       - name: start_date
+        description: "Contract start date."
         config:
           meta:
             pii: none
       - name: end_date
+        description: "Contract end date; empty while it runs."
         config:
           meta:
             pii: none
       - name: payer_member_id
+        description: "C member id of the payer (family plan); empty otherwise."
         config:
           meta:
             pii: quasi
       - name: status
+        description: "Contract status in C (active, paused, ended, migrated)."
         config:
           meta:
             pii: none
       - name: valid_from
+        description: "Start of this version of the contract (UTC)."
         config:
           meta:
             pii: none
       - name: valid_to
+        description: "End of this version; empty for the current version."
         config:
           meta:
             pii: none
       - name: is_current
+        description: "True for the version that is valid now (valid_to is empty)."
         config:
           meta:
             pii: none
       - name: is_deleted
+        description: "True for the version that records a delete."
         config:
           meta:
             pii: none
@@ -2119,14 +2603,17 @@ models:
     description: "Role product_c: access copy of identity_quality."
     columns:
       - name: source
+        description: "Product, or ALL for the ambiguous_link count."
         config:
           meta:
             pii: none
       - name: category
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
+        description: "Number of members in the category."
         config:
           meta:
             pii: none
@@ -2134,30 +2621,37 @@ models:
     description: "Role product_c: access copy of ingest_quality_daily."
     columns:
       - name: source
+        description: "Product the files come from (A-E)."
         config:
           meta:
             pii: none
       - name: dataset
+        description: "Dataset name inside the source (for example invoices)."
         config:
           meta:
             pii: none
       - name: partition_date
+        description: "Delivery partition: a day, or a month for the sales sheet."
         config:
           meta:
             pii: none
       - name: files_landed
+        description: "Files accepted by the landing step."
         config:
           meta:
             pii: none
       - name: rows_landed
+        description: "Rows in the accepted files."
         config:
           meta:
             pii: none
       - name: files_quarantined
+        description: "Files moved to quarantine."
         config:
           meta:
             pii: none
       - name: violations
+        description: "Contract violations found in the quarantined files."
         config:
           meta:
             pii: none
@@ -2165,14 +2659,17 @@ models:
     description: "Role product_c: access copy of metric_active_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: active_members
+        description: "Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month."
         config:
           meta:
             pii: none
@@ -2180,14 +2677,17 @@ models:
     description: "Role product_c: access copy of metric_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: churned_members
+        description: "Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end."
         config:
           meta:
             pii: none
@@ -2195,14 +2695,17 @@ models:
     description: "Role product_c: access copy of metric_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: net_revenue
+        description: "Tax-inclusive money received minus refunds, by calendar month (Tokyo time)."
         config:
           meta:
             pii: none
@@ -2210,14 +2713,17 @@ models:
     description: "Role product_c: access copy of metric_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         config:
           meta:
             pii: none
@@ -2225,46 +2731,57 @@ models:
     description: "Role product_c: access copy of recon_active_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2272,46 +2789,57 @@ models:
     description: "Role product_c: access copy of recon_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2319,46 +2847,57 @@ models:
     description: "Role product_c: access copy of recon_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2366,46 +2905,57 @@ models:
     description: "Role product_c: access copy of recon_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2413,62 +2963,77 @@ models:
     description: "Role product_d: access copy of dim_member."
     columns:
       - name: member_key
+        description: "Canonical member key: the same person in different products has the same key."
         config:
           meta:
             pii: quasi
       - name: household_key
+        description: "Household of the highest-priority record."
         config:
           meta:
             pii: quasi
       - name: key_method
+        description: "How the winning record's key was derived."
         config:
           meta:
             pii: none
       - name: name_initial
+        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: name_kana_initial
+        description: "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: email_domain
+        description: "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: phone_last4
+        description: "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: birth_date_year
+        description: "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: first_seen_at
+        description: "Earliest time any product knew this person or household."
         config:
           meta:
             pii: quasi
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: n_products
+        description: "In how many products the person appears."
         config:
           meta:
             pii: none
       - name: has_live_record
+        description: "True if at least one product still holds a non-deleted record of the person."
         config:
           meta:
             pii: none
@@ -2476,34 +3041,42 @@ models:
     description: "Role product_d: access copy of dim_household."
     columns:
       - name: household_key
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: n_members
+        description: "Number of people in the household."
         config:
           meta:
             pii: none
       - name: is_family
+        description: "True if more than one person is in the household."
         config:
           meta:
             pii: none
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: first_seen_at
+        description: "Earliest time any member of the household was seen."
         config:
           meta:
             pii: quasi
@@ -2511,30 +3084,37 @@ models:
     description: "Role product_d: access copy of dim_plan."
     columns:
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product whose plan code this is (C or D)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "C table generation (FY2025, FY2026); empty for D."
         config:
           meta:
             pii: none
       - name: source_plan_code
+        description: "Plan code as the source writes it."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: plan_name
+        description: "Human-readable plan name."
         config:
           meta:
             pii: none
       - name: billing_period_months
+        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none
@@ -2542,34 +3122,42 @@ models:
     description: "Role product_d: access copy of fct_session."
     columns:
       - name: session_id
+        description: "Session identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: session_type
+        description: "workout (A) or visit (C)."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: started_at
+        description: "Start of the session (UTC)."
         config:
           meta:
             pii: none
       - name: session_date_jst
+        description: "Calendar date of the session in Tokyo time."
         config:
           meta:
             pii: none
       - name: duration_min
+        description: "Workout length in minutes (app workouts only)."
         config:
           meta:
             pii: none
       - name: facility_id
+        description: "Gym or facility code."
         config:
           meta:
             pii: none
@@ -2577,46 +3165,57 @@ models:
     description: "Role product_d: access copy of fct_payment."
     columns:
       - name: payment_id
+        description: "Invoice, refund or purchase identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: payment_type
+        description: "charge or refund."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Plan code for D charges; empty for A purchases."
         config:
           meta:
             pii: none
       - name: occurred_at
+        description: "When the money moved (UTC; for D the start of the invoice or refund day in Tokyo)."
         config:
           meta:
             pii: none
       - name: amount_ex_tax
+        description: "Amount without consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_tax_incl
+        description: "Amount including consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original
+        description: "The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D); refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original_basis
+        description: "Whether amount_original is tax_incl or ex_tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
@@ -2624,26 +3223,32 @@ models:
     description: "Role product_d: access copy of fct_activity."
     columns:
       - name: activity_id
+        description: "Identifier of the underlying session or booking."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: occurred_at
+        description: "When the activity took place (UTC)."
         config:
           meta:
             pii: none
       - name: activity_date_jst
+        description: "Calendar date of the activity in Tokyo time."
         config:
           meta:
             pii: none
       - name: activity_type
+        description: "What the member did: workout, visit or booking_attended."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
@@ -2651,14 +3256,17 @@ models:
     description: "Role product_d: access copy of identity_quality."
     columns:
       - name: source
+        description: "Product, or ALL for the ambiguous_link count."
         config:
           meta:
             pii: none
       - name: category
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
+        description: "Number of members in the category."
         config:
           meta:
             pii: none
@@ -2666,30 +3274,37 @@ models:
     description: "Role product_d: access copy of ingest_quality_daily."
     columns:
       - name: source
+        description: "Product the files come from (A-E)."
         config:
           meta:
             pii: none
       - name: dataset
+        description: "Dataset name inside the source (for example invoices)."
         config:
           meta:
             pii: none
       - name: partition_date
+        description: "Delivery partition: a day, or a month for the sales sheet."
         config:
           meta:
             pii: none
       - name: files_landed
+        description: "Files accepted by the landing step."
         config:
           meta:
             pii: none
       - name: rows_landed
+        description: "Rows in the accepted files."
         config:
           meta:
             pii: none
       - name: files_quarantined
+        description: "Files moved to quarantine."
         config:
           meta:
             pii: none
       - name: violations
+        description: "Contract violations found in the quarantined files."
         config:
           meta:
             pii: none
@@ -2697,14 +3312,17 @@ models:
     description: "Role product_d: access copy of metric_active_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: active_members
+        description: "Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month."
         config:
           meta:
             pii: none
@@ -2712,14 +3330,17 @@ models:
     description: "Role product_d: access copy of metric_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: churned_members
+        description: "Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end."
         config:
           meta:
             pii: none
@@ -2727,14 +3348,17 @@ models:
     description: "Role product_d: access copy of metric_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: net_revenue
+        description: "Tax-inclusive money received minus refunds, by calendar month (Tokyo time)."
         config:
           meta:
             pii: none
@@ -2742,14 +3366,17 @@ models:
     description: "Role product_d: access copy of metric_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         config:
           meta:
             pii: none
@@ -2757,46 +3384,57 @@ models:
     description: "Role product_d: access copy of recon_active_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2804,46 +3442,57 @@ models:
     description: "Role product_d: access copy of recon_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2851,46 +3500,57 @@ models:
     description: "Role product_d: access copy of recon_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2898,46 +3558,57 @@ models:
     description: "Role product_d: access copy of recon_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -2945,42 +3616,52 @@ models:
     description: "Role product_e: access copy of dim_account."
     columns:
       - name: account_key
+        description: "Stable key of a corporate account: a hash of the company name without legal-form words and spacing."
         config:
           meta:
             pii: none
       - name: company_name
+        description: "Company name as last written in the sales sheet."
         config:
           meta:
             pii: none
       - name: contact_name_initial
+        description: "Masked: only the first character of the original column. Contact person at the company (direct personal data)."
         config:
           meta:
             pii: quasi
       - name: sales_owner
+        description: "Salesperson responsible for the account."
         config:
           meta:
             pii: quasi
       - name: seats
+        description: "Seats under contract as typed in the sales sheet; empty if the cell held a placeholder."
         config:
           meta:
             pii: none
       - name: monthly_fee_yen
+        description: "Monthly fee in yen (tax-exclusive) as typed in the sales sheet; empty if the cell held a placeholder."
         config:
           meta:
             pii: none
       - name: first_month
+        description: "First month the company appears in the sales sheet."
         config:
           meta:
             pii: none
       - name: last_month
+        description: "Last month the company appears in the sales sheet."
         config:
           meta:
             pii: none
       - name: status
+        description: "active or cancelled (mapped from the sheet's wording)."
         config:
           meta:
             pii: none
       - name: is_active
+        description: "True if the contract is running in the latest month of the sheet."
         config:
           meta:
             pii: none
@@ -2988,30 +3669,37 @@ models:
     description: "Role product_e: access copy of dim_plan."
     columns:
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product whose plan code this is (C or D)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "C table generation (FY2025, FY2026); empty for D."
         config:
           meta:
             pii: none
       - name: source_plan_code
+        description: "Plan code as the source writes it."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: plan_name
+        description: "Human-readable plan name."
         config:
           meta:
             pii: none
       - name: billing_period_months
+        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none
@@ -3019,34 +3707,42 @@ models:
     description: "Role product_e: access copy of fct_session."
     columns:
       - name: session_id
+        description: "Session identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: session_type
+        description: "workout (A) or visit (C)."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: started_at
+        description: "Start of the session (UTC)."
         config:
           meta:
             pii: none
       - name: session_date_jst
+        description: "Calendar date of the session in Tokyo time."
         config:
           meta:
             pii: none
       - name: duration_min
+        description: "Workout length in minutes (app workouts only)."
         config:
           meta:
             pii: none
       - name: facility_id
+        description: "Gym or facility code."
         config:
           meta:
             pii: none
@@ -3054,46 +3750,57 @@ models:
     description: "Role product_e: access copy of fct_payment."
     columns:
       - name: payment_id
+        description: "Invoice, refund or purchase identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: payment_type
+        description: "charge or refund."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Plan code for D charges; empty for A purchases."
         config:
           meta:
             pii: none
       - name: occurred_at
+        description: "When the money moved (UTC; for D the start of the invoice or refund day in Tokyo)."
         config:
           meta:
             pii: none
       - name: amount_ex_tax
+        description: "Amount without consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_tax_incl
+        description: "Amount including consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original
+        description: "The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D); refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original_basis
+        description: "Whether amount_original is tax_incl or ex_tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
@@ -3101,26 +3808,32 @@ models:
     description: "Role product_e: access copy of fct_activity."
     columns:
       - name: activity_id
+        description: "Identifier of the underlying session or booking."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: occurred_at
+        description: "When the activity took place (UTC)."
         config:
           meta:
             pii: none
       - name: activity_date_jst
+        description: "Calendar date of the activity in Tokyo time."
         config:
           meta:
             pii: none
       - name: activity_type
+        description: "What the member did: workout, visit or booking_attended."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
@@ -3128,14 +3841,17 @@ models:
     description: "Role product_e: access copy of identity_quality."
     columns:
       - name: source
+        description: "Product, or ALL for the ambiguous_link count."
         config:
           meta:
             pii: none
       - name: category
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
+        description: "Number of members in the category."
         config:
           meta:
             pii: none
@@ -3143,30 +3859,37 @@ models:
     description: "Role product_e: access copy of ingest_quality_daily."
     columns:
       - name: source
+        description: "Product the files come from (A-E)."
         config:
           meta:
             pii: none
       - name: dataset
+        description: "Dataset name inside the source (for example invoices)."
         config:
           meta:
             pii: none
       - name: partition_date
+        description: "Delivery partition: a day, or a month for the sales sheet."
         config:
           meta:
             pii: none
       - name: files_landed
+        description: "Files accepted by the landing step."
         config:
           meta:
             pii: none
       - name: rows_landed
+        description: "Rows in the accepted files."
         config:
           meta:
             pii: none
       - name: files_quarantined
+        description: "Files moved to quarantine."
         config:
           meta:
             pii: none
       - name: violations
+        description: "Contract violations found in the quarantined files."
         config:
           meta:
             pii: none
@@ -3174,14 +3897,17 @@ models:
     description: "Role product_e: access copy of metric_active_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: active_members
+        description: "Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month."
         config:
           meta:
             pii: none
@@ -3189,14 +3915,17 @@ models:
     description: "Role product_e: access copy of metric_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: churned_members
+        description: "Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end."
         config:
           meta:
             pii: none
@@ -3204,14 +3933,17 @@ models:
     description: "Role product_e: access copy of metric_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: net_revenue
+        description: "Tax-inclusive money received minus refunds, by calendar month (Tokyo time)."
         config:
           meta:
             pii: none
@@ -3219,14 +3951,17 @@ models:
     description: "Role product_e: access copy of metric_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         config:
           meta:
             pii: none
@@ -3234,46 +3969,57 @@ models:
     description: "Role product_e: access copy of recon_active_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -3281,46 +4027,57 @@ models:
     description: "Role product_e: access copy of recon_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -3328,46 +4085,57 @@ models:
     description: "Role product_e: access copy of recon_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -3375,46 +4143,57 @@ models:
     description: "Role product_e: access copy of recon_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -3422,70 +4201,87 @@ models:
     description: "Role privacy_officer: access copy of dim_member."
     columns:
       - name: member_key
+        description: "Canonical member key: the same person in different products has the same key."
         config:
           meta:
             pii: quasi
       - name: household_key
+        description: "Household of the highest-priority record."
         config:
           meta:
             pii: quasi
       - name: key_method
+        description: "How the winning record's key was derived."
         config:
           meta:
             pii: none
       - name: name
+        description: "Full name from the highest-priority product (direct personal data)."
         config:
           meta:
             pii: direct
       - name: name_kana
+        description: "Name in kana as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: direct
       - name: email
+        description: "E-mail address as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: direct
       - name: phone
+        description: "Phone number as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: direct
       - name: birth_date
+        description: "Date of birth as recorded by the source (direct personal data)."
         config:
           meta:
             pii: direct
       - name: health_notes
+        description: "Free-text injury or condition declaration from the app (sensitive)."
         config:
           meta:
             pii: sensitive
       - name: medical_conditions
+        description: "Free-text answers of the gym's intake questionnaire (sensitive)."
         config:
           meta:
             pii: sensitive
       - name: first_seen_at
+        description: "Earliest time any product knew this person or household."
         config:
           meta:
             pii: quasi
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: n_products
+        description: "In how many products the person appears."
         config:
           meta:
             pii: none
       - name: has_live_record
+        description: "True if at least one product still holds a non-deleted record of the person."
         config:
           meta:
             pii: none
@@ -3493,34 +4289,42 @@ models:
     description: "Role privacy_officer: access copy of dim_household."
     columns:
       - name: household_key
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: n_members
+        description: "Number of people in the household."
         config:
           meta:
             pii: none
       - name: is_family
+        description: "True if more than one person is in the household."
         config:
           meta:
             pii: none
       - name: in_a
+        description: "The person or household appears in product A."
         config:
           meta:
             pii: none
       - name: in_b
+        description: "The person or household appears in product B."
         config:
           meta:
             pii: none
       - name: in_c
+        description: "The person or household appears in product C."
         config:
           meta:
             pii: none
       - name: in_d
+        description: "The person or household appears in product D."
         config:
           meta:
             pii: none
       - name: first_seen_at
+        description: "Earliest time any member of the household was seen."
         config:
           meta:
             pii: quasi
@@ -3528,42 +4332,52 @@ models:
     description: "Role privacy_officer: access copy of dim_account."
     columns:
       - name: account_key
+        description: "Stable key of a corporate account: a hash of the company name without legal-form words and spacing."
         config:
           meta:
             pii: none
       - name: company_name
+        description: "Company name as last written in the sales sheet."
         config:
           meta:
             pii: none
       - name: contact_name
+        description: "Contact person at the company (direct personal data)."
         config:
           meta:
             pii: direct
       - name: sales_owner
+        description: "Salesperson responsible for the account."
         config:
           meta:
             pii: quasi
       - name: seats
+        description: "Seats under contract as typed in the sales sheet; empty if the cell held a placeholder."
         config:
           meta:
             pii: none
       - name: monthly_fee_yen
+        description: "Monthly fee in yen (tax-exclusive) as typed in the sales sheet; empty if the cell held a placeholder."
         config:
           meta:
             pii: none
       - name: first_month
+        description: "First month the company appears in the sales sheet."
         config:
           meta:
             pii: none
       - name: last_month
+        description: "Last month the company appears in the sales sheet."
         config:
           meta:
             pii: none
       - name: status
+        description: "active or cancelled (mapped from the sheet's wording)."
         config:
           meta:
             pii: none
       - name: is_active
+        description: "True if the contract is running in the latest month of the sheet."
         config:
           meta:
             pii: none
@@ -3571,30 +4385,37 @@ models:
     description: "Role privacy_officer: access copy of dim_plan."
     columns:
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product whose plan code this is (C or D)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "C table generation (FY2025, FY2026); empty for D."
         config:
           meta:
             pii: none
       - name: source_plan_code
+        description: "Plan code as the source writes it."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: plan_name
+        description: "Human-readable plan name."
         config:
           meta:
             pii: none
       - name: billing_period_months
+        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none
@@ -3602,34 +4423,42 @@ models:
     description: "Role privacy_officer: access copy of fct_session."
     columns:
       - name: session_id
+        description: "Session identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: session_type
+        description: "workout (A) or visit (C)."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: started_at
+        description: "Start of the session (UTC)."
         config:
           meta:
             pii: none
       - name: session_date_jst
+        description: "Calendar date of the session in Tokyo time."
         config:
           meta:
             pii: none
       - name: duration_min
+        description: "Workout length in minutes (app workouts only)."
         config:
           meta:
             pii: none
       - name: facility_id
+        description: "Gym or facility code."
         config:
           meta:
             pii: none
@@ -3637,50 +4466,62 @@ models:
     description: "Role privacy_officer: access copy of fct_booking."
     columns:
       - name: booking_id
+        description: "Booking identifier: tenant_id and the booking number inside the tenant."
         config:
           meta:
             pii: none
       - name: tenant_id
+        description: "Studio (tenant) identifier in product B."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: booked_at
+        description: "When the booking was created (UTC)."
         config:
           meta:
             pii: none
       - name: class_start_at
+        description: "Start of the class (UTC)."
         config:
           meta:
             pii: none
       - name: class_date_jst
+        description: "Calendar date of the class in Tokyo time."
         config:
           meta:
             pii: none
       - name: status
+        description: "booked, attended, cancelled or no_show."
         config:
           meta:
             pii: none
       - name: price_ex_tax
+        description: "Booking price without consumption tax."
         config:
           meta:
             pii: none
       - name: price_tax_incl
+        description: "Booking price including consumption tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
       - name: is_deleted
+        description: "True if B marks the booking deleted."
         config:
           meta:
             pii: none
       - name: as_of_snapshot
+        description: "Date of the B snapshot this row was taken from."
         config:
           meta:
             pii: none
@@ -3688,46 +4529,57 @@ models:
     description: "Role privacy_officer: access copy of fct_payment."
     columns:
       - name: payment_id
+        description: "Invoice, refund or purchase identifier."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
       - name: payment_type
+        description: "charge or refund."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Plan code for D charges; empty for A purchases."
         config:
           meta:
             pii: none
       - name: occurred_at
+        description: "When the money moved (UTC; for D the start of the invoice or refund day in Tokyo)."
         config:
           meta:
             pii: none
       - name: amount_ex_tax
+        description: "Amount without consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_tax_incl
+        description: "Amount including consumption tax; refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original
+        description: "The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D); refunds are negative."
         config:
           meta:
             pii: none
       - name: amount_original_basis
+        description: "Whether amount_original is tax_incl or ex_tax."
         config:
           meta:
             pii: none
       - name: tax_rate
+        description: "Consumption tax rate applied."
         config:
           meta:
             pii: none
@@ -3735,26 +4587,32 @@ models:
     description: "Role privacy_officer: access copy of fct_activity."
     columns:
       - name: activity_id
+        description: "Identifier of the underlying session or booking."
         config:
           meta:
             pii: none
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: occurred_at
+        description: "When the activity took place (UTC)."
         config:
           meta:
             pii: none
       - name: activity_date_jst
+        description: "Calendar date of the activity in Tokyo time."
         config:
           meta:
             pii: none
       - name: activity_type
+        description: "What the member did: workout, visit or booking_attended."
         config:
           meta:
             pii: none
       - name: source
+        description: "Product the record comes from (A-E)."
         config:
           meta:
             pii: none
@@ -3762,66 +4620,82 @@ models:
     description: "Role privacy_officer: access copy of scd_contract."
     columns:
       - name: contract_id
+        description: "Contract identifier (K25-/K26- prefix marks the table generation)."
         config:
           meta:
             pii: none
       - name: generation
+        description: "Contract table generation: FY2025 or FY2026 (for a plan: the C generation, empty for D)."
         config:
           meta:
             pii: none
       - name: member_id
+        description: "C member id of the contract holder."
         config:
           meta:
             pii: quasi
       - name: member_key
+        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
       - name: plan_ref
+        description: "Source plan code namespaced by source and generation (for example C26:P100)."
         config:
           meta:
             pii: none
       - name: plan_key
+        description: "Unified plan across products and table generations."
         config:
           meta:
             pii: none
       - name: monthly_fee_tax_incl
+        description: "Monthly fee including consumption tax."
         config:
           meta:
             pii: none
       - name: monthly_fee_ex_tax
+        description: "Monthly fee without consumption tax."
         config:
           meta:
             pii: none
       - name: start_date
+        description: "Contract start date."
         config:
           meta:
             pii: none
       - name: end_date
+        description: "Contract end date; empty while it runs."
         config:
           meta:
             pii: none
       - name: payer_member_id
+        description: "C member id of the payer (family plan); empty otherwise."
         config:
           meta:
             pii: quasi
       - name: status
+        description: "Contract status in C (active, paused, ended, migrated)."
         config:
           meta:
             pii: none
       - name: valid_from
+        description: "Start of this version of the contract (UTC)."
         config:
           meta:
             pii: none
       - name: valid_to
+        description: "End of this version; empty for the current version."
         config:
           meta:
             pii: none
       - name: is_current
+        description: "True for the version that is valid now (valid_to is empty)."
         config:
           meta:
             pii: none
       - name: is_deleted
+        description: "True for the version that records a delete."
         config:
           meta:
             pii: none
@@ -3829,14 +4703,17 @@ models:
     description: "Role privacy_officer: access copy of identity_quality."
     columns:
       - name: source
+        description: "Product, or ALL for the ambiguous_link count."
         config:
           meta:
             pii: none
       - name: category
+        description: "How members were identified (email, phone, phone_kana), source_local for those that could not be matched, or ambiguous_link."
         config:
           meta:
             pii: none
       - name: n
+        description: "Number of members in the category."
         config:
           meta:
             pii: none
@@ -3844,30 +4721,37 @@ models:
     description: "Role privacy_officer: access copy of ingest_quality_daily."
     columns:
       - name: source
+        description: "Product the files come from (A-E)."
         config:
           meta:
             pii: none
       - name: dataset
+        description: "Dataset name inside the source (for example invoices)."
         config:
           meta:
             pii: none
       - name: partition_date
+        description: "Delivery partition: a day, or a month for the sales sheet."
         config:
           meta:
             pii: none
       - name: files_landed
+        description: "Files accepted by the landing step."
         config:
           meta:
             pii: none
       - name: rows_landed
+        description: "Rows in the accepted files."
         config:
           meta:
             pii: none
       - name: files_quarantined
+        description: "Files moved to quarantine."
         config:
           meta:
             pii: none
       - name: violations
+        description: "Contract violations found in the quarantined files."
         config:
           meta:
             pii: none
@@ -3875,14 +4759,17 @@ models:
     description: "Role privacy_officer: access copy of metric_active_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: active_members
+        description: "Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month."
         config:
           meta:
             pii: none
@@ -3890,14 +4777,17 @@ models:
     description: "Role privacy_officer: access copy of metric_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: churned_members
+        description: "Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end."
         config:
           meta:
             pii: none
@@ -3905,14 +4795,17 @@ models:
     description: "Role privacy_officer: access copy of metric_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: net_revenue
+        description: "Tax-inclusive money received minus refunds, by calendar month (Tokyo time)."
         config:
           meta:
             pii: none
@@ -3920,14 +4813,17 @@ models:
     description: "Role privacy_officer: access copy of metric_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         config:
           meta:
             pii: none
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         config:
           meta:
             pii: none
@@ -3935,46 +4831,57 @@ models:
     description: "Role privacy_officer: access copy of recon_active_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -3982,46 +4889,57 @@ models:
     description: "Role privacy_officer: access copy of recon_churned_members."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -4029,46 +4947,57 @@ models:
     description: "Role privacy_officer: access copy of recon_net_revenue."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none
@@ -4076,46 +5005,57 @@ models:
     description: "Role privacy_officer: access copy of recon_sessions_per_active_member."
     columns:
       - name: period_month
+        description: "First day of the month."
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         config:
           meta:
             pii: none

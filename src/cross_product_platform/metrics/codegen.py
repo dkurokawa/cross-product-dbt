@@ -214,9 +214,10 @@ def _yaml_str(text: str) -> str:
     return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def _column(name: str, data_type: str, tests: str = "") -> str:
+def _column(name: str, data_type: str, description: str, tests: str = "") -> str:
     return (
-        f"      - name: {name}\n        data_type: {data_type}\n"
+        f"      - name: {name}\n        description: {_yaml_str(description)}\n"
+        f"        data_type: {data_type}\n"
         f"        config:\n          meta:\n            pii: none\n{tests}"
     )
 
@@ -226,9 +227,34 @@ def metric_columns(metric: Metric) -> list[tuple[str, str]]:
     return [("period_month", "date"), ("product", "string"), (metric.name, _value_type(metric))]
 
 
+def metric_descriptions(metric: Metric) -> dict[str, str]:
+    """Column descriptions of a generated metric model."""
+    return {
+        "period_month": "First day of the month the value is for.",
+        "product": "Product code (A-D) the value is scoped to, or ALL for the whole platform.",
+        metric.name: metric.description,
+    }
+
+
+RECON_DESCRIPTIONS: Final = {
+    "period_month": "First day of the month.",
+    "product": "Product that reports the KPI.",
+    "reported_as": "The product's own name for the KPI.",
+    "reported_value": "The value the product reports.",
+    "canonical_value": "The canonical metric for the same product scope and month.",
+    "diff": "Reported minus canonical.",
+    "diff_pct": "Difference as a percentage of the canonical value.",
+    "expected_direction": "Known relationship of the reported value to the canonical one.",
+    "threshold_pct": "Largest absolute diff_pct that the known definition difference explains.",
+    "comparable": "False when the canonical metric has no counterpart for this KPI.",
+    "explained": "True when the gap is inside its known band; empty when not comparable.",
+}
+
+
 def _metric_yml(metric: Metric) -> str:
     nn = "        data_tests: [not_null]\n"
-    cols = "".join(_column(n, t, nn) for n, t in metric_columns(metric))
+    described = metric_descriptions(metric)
+    cols = "".join(_column(n, t, described[n], nn) for n, t in metric_columns(metric))
     return (
         f"# {HEADER}\nversion: 2\n\nmodels:\n  - name: metric_{metric.name}\n"
         f"    description: {_yaml_str(metric.description)}\n" + _CONFIG + f"    columns:\n{cols}"
@@ -388,7 +414,7 @@ def _recon_description(metric: Metric) -> str:
 
 
 def _recon_yml(metric: Metric) -> str:
-    cols = "".join(_column(n, t) for n, t in RECON_COLUMNS)
+    cols = "".join(_column(n, t, RECON_DESCRIPTIONS[n]) for n, t in RECON_COLUMNS)
     return (
         f"# {HEADER}\nversion: 2\n\nmodels:\n  - name: recon_{metric.name}\n"
         f"    description: {_yaml_str(_recon_description(metric))}\n"
@@ -458,6 +484,15 @@ def generate_files(spec: MetricsSpec) -> dict[str, str]:
         files[f"{RECON_DIR}/recon_{metric.name}.yml"] = _recon_yml(metric)
     files[DOCS_PATH] = _docs(spec)
     return files
+
+
+def generated_descriptions(spec: MetricsSpec) -> dict[str, dict[str, str]]:
+    """Column descriptions of every generated model (used by the access layer)."""
+    out: dict[str, dict[str, str]] = {}
+    for metric in spec.metrics:
+        out[f"metric_{metric.name}"] = metric_descriptions(metric)
+        out[f"recon_{metric.name}"] = dict(RECON_DESCRIPTIONS)
+    return out
 
 
 def generated_columns(spec: MetricsSpec) -> dict[str, list[tuple[str, str]]]:

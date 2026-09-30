@@ -12,6 +12,7 @@ models:
     config:
       meta:
         pii: none
+    description: Product, or ALL for the ambiguous_link count.
   - name: category
     data_tests:
     - accepted_values:
@@ -25,12 +26,15 @@ models:
     config:
       meta:
         pii: none
+    description: How members were identified (email, phone, phone_kana), source_local for those that could
+      not be matched, or ambiguous_link.
   - name: n
     data_tests:
     - not_null
     config:
       meta:
         pii: none
+    description: Number of members in the category.
 - name: ingest_quality_daily
   description: 'Files accepted and quarantined per source, dataset and delivery partition (a day, or a
     month for E). Quarantined files are never silently dropped: they are counted here.
@@ -43,34 +47,41 @@ models:
     config:
       meta:
         pii: none
+    description: Product the files come from (A-E).
   - name: dataset
     data_tests:
     - not_null
     config:
       meta:
         pii: none
+    description: Dataset name inside the source (for example invoices).
   - name: partition_date
     data_tests:
     - not_null
     config:
       meta:
         pii: none
+    description: 'Delivery partition: a day, or a month for the sales sheet.'
   - name: files_landed
     config:
       meta:
         pii: none
+    description: Files accepted by the landing step.
   - name: rows_landed
     config:
       meta:
         pii: none
+    description: Rows in the accepted files.
   - name: files_quarantined
     config:
       meta:
         pii: none
+    description: Files moved to quarantine.
   - name: violations
     config:
       meta:
         pii: none
+    description: Contract violations found in the quarantined files.
   data_tests:
   - dbt_utils.unique_combination_of_columns:
       arguments:
@@ -90,10 +101,12 @@ models:
     data_tests:
     - unique
     - not_null
+    description: Identifier of the audit event.
   - name: occurred_at
     config:
       meta:
         pii: none
+    description: When the gateway answered (UTC).
   - name: outcome
     config:
       meta:
@@ -105,43 +118,54 @@ models:
           - executed
           - denied
     - not_null
+    description: executed or denied.
   - name: principal
     config:
       meta:
         pii: quasi
+    description: Who asked, as declared by the caller (not authenticated).
   - name: role
     config:
       meta:
         pii: none
+    description: Role the query ran as.
   - name: sql_hash
     config:
       meta:
         pii: none
+    description: SHA-256 of the normalized SQL; the same query shape has the same hash.
   - name: sql_normalized
     config:
       meta:
         pii: none
+    description: The SQL with literals replaced by placeholders.
   - name: referenced_tables
     config:
       meta:
         pii: none
+    description: Tables the query used.
   - name: referenced_columns
     config:
       meta:
         pii: none
+    description: Columns the query used, as table.column.
   - name: sensitive_columns
     config:
       meta:
         pii: none
+    description: Columns declared sensitive that the query mentions.
   - name: touched_sensitive
     config:
       meta:
         pii: none
+    description: True if the query mentions a sensitive column, even if it was refused.
   - name: row_count
     config:
       meta:
         pii: none
+    description: Rows returned; empty for denied queries.
   - name: deny_reason
     config:
       meta:
         pii: none
+    description: Why the gateway refused the query; empty for executed queries.

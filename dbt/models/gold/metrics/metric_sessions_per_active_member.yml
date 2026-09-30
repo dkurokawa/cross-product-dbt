@@ -11,18 +11,21 @@ models:
         generated: true
     columns:
       - name: period_month
+        description: "First day of the month the value is for."
         data_type: date
         config:
           meta:
             pii: none
         data_tests: [not_null]
       - name: product
+        description: "Product code (A-D) the value is scoped to, or ALL for the whole platform."
         data_type: string
         config:
           meta:
             pii: none
         data_tests: [not_null]
       - name: sessions_per_active_member
+        description: "Activities in the 30-day window divided by active_members over the same window."
         data_type: numeric(28,6)
         config:
           meta:

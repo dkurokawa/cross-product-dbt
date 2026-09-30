@@ -116,6 +116,7 @@ def build_role_catalog(
         base = by_name.get(name, {})
         types = {c["name"]: c["type"] for c in model.get("columns", [])}
         described = {c["name"]: c["description"] for c in base.get("columns", [])}
+        described.update(spec.get("descriptions", {}))
         tables.append(
             {
                 "name": name,

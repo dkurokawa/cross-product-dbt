@@ -164,3 +164,33 @@ def test_scan_cli(lake: IngestResult, tmp_path: Path, capsys: pytest.CaptureFixt
     bad_args = ["scan", "--root", str(tmp_path / "lk"), "--sources", str(tmp_path / "s.yml")]
     assert main([*bad_args, "--skip-models"]) == 1
     assert "mobile_number" in capsys.readouterr().err
+
+
+def test_every_column_needs_a_description() -> None:
+    from cross_product_platform.scan import check_descriptions
+
+    def col(text: str | None) -> dict[str, Any]:
+        return {} if text is None else {"description": text}
+
+    manifest = {
+        "nodes": {
+            "model.p.a": _node("dim_a", "silver", {"id": col("An id."), "tel": col("  ")}),
+            "model.p.b": _node("acc_b", "access", {"x": col(None)}),
+            "model.p.c": _node("brz_c", "bronze", {"y": col(None)}),
+            "seed.p.d": {
+                "resource_type": "seed",
+                "name": "s",
+                "schema": "silver",
+                "columns": {"z": col("ok")},
+            },  # fmt: skip
+        }
+    }
+    catalog: dict[str, Any] = {"nodes": {"model.p.a": {"columns": {"id": {}, "EXTRA": {}}}}}
+    problems = check_descriptions(manifest, catalog)
+    assert sorted(problems) == [
+        "acc_b.x: no description", "dim_a.EXTRA: no description", "dim_a.tel: no description",
+    ]  # fmt: skip
+    assert check_descriptions(manifest, None) == [
+        "dim_a.tel: no description",
+        "acc_b.x: no description",
+    ]

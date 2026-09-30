@@ -200,3 +200,32 @@ def check_model_declarations(
             ):
                 problems.append(f"{label}: direct column needs meta.mask in {MASKS}")
     return problems
+
+
+def check_descriptions(
+    manifest: dict[str, Any],
+    catalog: dict[str, Any] | None,
+    layers: Sequence[str] = ("silver", "gold", "access"),
+) -> list[str]:
+    """Every column of every model / seed in ``layers`` needs a description.
+
+    Descriptions are what the catalog and the MCP ``describe_table`` tool show; without this
+    check they would quietly go empty again as columns are added. Generated models get theirs
+    from their generators (metrics.yml, access.yml), so a missing one there means the
+    generator needs a description, not a hand edit.
+    """
+    problems: list[str] = []
+    for uid, node in manifest.get("nodes", {}).items():
+        if node.get("resource_type") not in {"model", "seed"} or node.get("schema") not in layers:
+            continue
+        declared = node.get("columns", {})
+        names = list(declared)
+        if catalog is not None:
+            names += list(catalog.get("nodes", {}).get(uid, {}).get("columns", {}))
+        for column in dict.fromkeys(names):
+            entry: dict[str, Any] = next(
+                (d for k, d in declared.items() if k.lower() == column.lower()), {}
+            )
+            if not str(entry.get("description", "")).strip():
+                problems.append(f"{node.get('name', uid)}.{column}: no description")
+    return problems

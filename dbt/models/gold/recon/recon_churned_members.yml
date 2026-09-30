@@ -11,56 +11,67 @@ models:
         generated: true
     columns:
       - name: period_month
+        description: "First day of the month."
         data_type: date
         config:
           meta:
             pii: none
       - name: product
+        description: "Product that reports the KPI."
         data_type: string
         config:
           meta:
             pii: none
       - name: reported_as
+        description: "The product's own name for the KPI."
         data_type: string
         config:
           meta:
             pii: none
       - name: reported_value
+        description: "The value the product reports."
         data_type: numeric(28,6)
         config:
           meta:
             pii: none
       - name: canonical_value
+        description: "The canonical metric for the same product scope and month."
         data_type: numeric(28,6)
         config:
           meta:
             pii: none
       - name: diff
+        description: "Reported minus canonical."
         data_type: numeric(28,6)
         config:
           meta:
             pii: none
       - name: diff_pct
+        description: "Difference as a percentage of the canonical value."
         data_type: numeric(28,6)
         config:
           meta:
             pii: none
       - name: expected_direction
+        description: "Known relationship of the reported value to the canonical one."
         data_type: string
         config:
           meta:
             pii: none
       - name: threshold_pct
+        description: "Largest absolute diff_pct that the known definition difference explains."
         data_type: numeric(28,6)
         config:
           meta:
             pii: none
       - name: comparable
+        description: "False when the canonical metric has no counterpart for this KPI."
         data_type: boolean
         config:
           meta:
             pii: none
       - name: explained
+        description: "True when the gap is inside its known band; empty when not comparable."
         data_type: boolean
         config:
           meta:

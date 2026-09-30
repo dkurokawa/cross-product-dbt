@@ -36,7 +36,7 @@ from .metrics.check import (
 from .metrics.codegen import generate_files
 from .metrics.spec import SpecError, load_spec
 from .roles import build_role_databases, load_allowlist
-from .scan import check_model_declarations, load_source_declarations, scan_lake
+from .scan import check_descriptions, check_model_declarations, load_source_declarations, scan_lake
 
 
 def _gateway_paths(parser: argparse.ArgumentParser) -> None:
@@ -286,6 +286,7 @@ def _scan(args: argparse.Namespace) -> int:
             print(f"scan: cannot read dbt artifacts: {err}", file=sys.stderr)
             return 2
         problems += check_model_declarations(manifest, catalog)
+        problems += check_descriptions(manifest, catalog)
     for warning in warnings:
         print(f"scan: warning: {warning}")
     for problem in problems:

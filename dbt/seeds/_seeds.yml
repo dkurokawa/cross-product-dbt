@@ -13,29 +13,36 @@ seeds:
     config:
       meta:
         pii: none
+    description: Source plan code namespaced by source and generation (for example C26:P100).
   - name: source
     config:
       meta:
         pii: none
+    description: Product whose plan code this is (C or D).
   - name: generation
     config:
       meta:
         pii: none
+    description: C table generation (FY2025, FY2026); empty for D.
   - name: source_plan_code
     config:
       meta:
         pii: none
+    description: Plan code as the source writes it.
   - name: plan_key
     data_tests:
     - not_null
     config:
       meta:
         pii: none
+    description: Unified plan across products and table generations.
   - name: plan_name
     config:
       meta:
         pii: none
+    description: Human-readable plan name.
   - name: billing_period_months
     config:
       meta:
         pii: none
+    description: Months between invoices for this plan.

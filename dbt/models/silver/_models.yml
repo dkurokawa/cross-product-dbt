@@ -7,24 +7,30 @@ models:
     config:
       meta:
         pii: none
+    description: Product the record comes from (A-D).
   - name: source_member_id
     config:
       meta:
         pii: quasi
+    description: 'The product''s own member identifier (D: its derived key).'
   - name: source_member_key
     config:
       meta:
         pii: quasi
+    description: member_key as derived from this record alone.
   - name: member_key
     data_tests:
     - not_null
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: link_ambiguous
     config:
       meta:
         pii: none
+    description: True if this record's phone+kana link resolved more than one e-mail identity.
   data_tests:
   - dbt_utils.unique_combination_of_columns:
       arguments:
@@ -41,77 +47,94 @@ models:
     config:
       meta:
         pii: quasi
+    description: 'Canonical member key: the same person in different products has the same key.'
   - name: household_key
     data_tests:
     - not_null
     config:
       meta:
         pii: quasi
+    description: Household of the highest-priority record.
   - name: key_method
     config:
       meta:
         pii: none
+    description: How the winning record's key was derived.
   - name: name
     config:
       meta:
         pii: direct
         mask: initial
+    description: Full name from the highest-priority product (direct personal data).
   - name: name_kana
     config:
       meta:
         pii: direct
         mask: initial
+    description: Name in kana as recorded by the highest-priority product (direct personal data).
   - name: email
     config:
       meta:
         pii: direct
         mask: email_domain
+    description: E-mail address as recorded by the highest-priority product (direct personal data).
   - name: phone
     config:
       meta:
         pii: direct
         mask: phone_last4
+    description: Phone number as recorded by the highest-priority product (direct personal data).
   - name: birth_date
     config:
       meta:
         pii: direct
         mask: birth_year
+    description: Date of birth as recorded by the source (direct personal data).
   - name: health_notes
     config:
       meta:
         pii: sensitive
+    description: Free-text injury or condition declaration from the app (sensitive).
   - name: medical_conditions
     config:
       meta:
         pii: sensitive
+    description: Free-text answers of the gym's intake questionnaire (sensitive).
   - name: first_seen_at
     config:
       meta:
         pii: quasi
+    description: Earliest time any product knew this person or household.
   - name: in_a
     config:
       meta:
         pii: none
+    description: The person or household appears in product A.
   - name: in_b
     config:
       meta:
         pii: none
+    description: The person or household appears in product B.
   - name: in_c
     config:
       meta:
         pii: none
+    description: The person or household appears in product C.
   - name: in_d
     config:
       meta:
         pii: none
+    description: The person or household appears in product D.
   - name: n_products
     config:
       meta:
         pii: none
+    description: In how many products the person appears.
   - name: has_live_record
     config:
       meta:
         pii: none
+    description: True if at least one product still holds a non-deleted record of the person.
 - name: dim_household
   description: 'Households: a payer plus the people who use the service.'
   columns:
@@ -122,34 +145,43 @@ models:
     config:
       meta:
         pii: quasi
+    description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
+      for.'
   - name: n_members
     config:
       meta:
         pii: none
+    description: Number of people in the household.
   - name: is_family
     config:
       meta:
         pii: none
+    description: True if more than one person is in the household.
   - name: in_a
     config:
       meta:
         pii: none
+    description: The person or household appears in product A.
   - name: in_b
     config:
       meta:
         pii: none
+    description: The person or household appears in product B.
   - name: in_c
     config:
       meta:
         pii: none
+    description: The person or household appears in product C.
   - name: in_d
     config:
       meta:
         pii: none
+    description: The person or household appears in product D.
   - name: first_seen_at
     config:
       meta:
         pii: quasi
+    description: Earliest time any member of the household was seen.
 - name: dim_account
   description: Corporate accounts from the sales sheet (E).
   columns:
@@ -160,43 +192,55 @@ models:
     config:
       meta:
         pii: none
+    description: 'Stable key of a corporate account: a hash of the company name without legal-form words
+      and spacing.'
   - name: company_name
     config:
       meta:
         pii: none
+    description: Company name as last written in the sales sheet.
   - name: contact_name
     config:
       meta:
         pii: direct
         mask: initial
+    description: Contact person at the company (direct personal data).
   - name: sales_owner
     config:
       meta:
         pii: quasi
+    description: Salesperson responsible for the account.
   - name: seats
     config:
       meta:
         pii: none
+    description: Seats under contract as typed in the sales sheet; empty if the cell held a placeholder.
   - name: monthly_fee_yen
     config:
       meta:
         pii: none
+    description: Monthly fee in yen (tax-exclusive) as typed in the sales sheet; empty if the cell held
+      a placeholder.
   - name: first_month
     config:
       meta:
         pii: none
+    description: First month the company appears in the sales sheet.
   - name: last_month
     config:
       meta:
         pii: none
+    description: Last month the company appears in the sales sheet.
   - name: status
     config:
       meta:
         pii: none
+    description: active or cancelled (mapped from the sheet's wording).
   - name: is_active
     config:
       meta:
         pii: none
+    description: True if the contract is running in the latest month of the sheet.
 - name: c_member_current
   description: Latest state per C member; erased members are flagged, not dropped.
   columns:
@@ -207,76 +251,96 @@ models:
     config:
       meta:
         pii: quasi
+    description: C member id.
   - name: name
     config:
       meta:
         pii: direct
         mask: initial
+    description: Full name as recorded by the highest-priority product (direct personal data).
   - name: name_kana
     config:
       meta:
         pii: direct
         mask: initial
+    description: Name in kana as recorded by the highest-priority product (direct personal data).
   - name: email
     config:
       meta:
         pii: direct
         mask: email_domain
+    description: E-mail address as recorded by the highest-priority product (direct personal data).
   - name: phone
     config:
       meta:
         pii: direct
         mask: phone_last4
+    description: Phone number as recorded by the highest-priority product (direct personal data).
   - name: birth_date
     config:
       meta:
         pii: direct
         mask: birth_year
+    description: Date of birth as recorded by the source (direct personal data).
   - name: guardian_email
     config:
       meta:
         pii: direct
         mask: email_domain
+    description: E-mail of the guardian for a junior membership (direct personal data).
   - name: medical_conditions
     config:
       meta:
         pii: sensitive
+    description: Free-text answers of the gym's intake questionnaire (sensitive).
   - name: facility_id
     config:
       meta:
         pii: none
+    description: Gym or facility code.
   - name: status
     config:
       meta:
         pii: none
+    description: Membership status in C (active, left).
   - name: joined_on
     config:
       meta:
         pii: none
+    description: Join date recorded by C.
   - name: member_key
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: link_key
     config:
       meta:
         pii: quasi
+    description: Hash of normalized phone and kana name; the bridge between products that know a person
+      by different identifiers.
   - name: key_method
     config:
       meta:
         pii: none
+    description: 'How member_key was derived: email, phone, phone_kana or source_local.'
   - name: household_key
     config:
       meta:
         pii: quasi
+    description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
+      for.'
   - name: last_changed_at
     config:
       meta:
         pii: none
+    description: Time of the latest change record in the CDC log.
   - name: is_deleted
     config:
       meta:
         pii: none
+    description: True if the last change was a delete (erasure).
 - name: c_contract_current
   description: Latest state per contract, either table generation.
   columns:
@@ -287,18 +351,24 @@ models:
     config:
       meta:
         pii: none
+    description: Contract identifier (K25-/K26- prefix marks the table generation).
   - name: generation
     config:
       meta:
         pii: none
+    description: 'Contract table generation: FY2025 or FY2026 (for a plan: the C generation, empty for
+      D).'
   - name: member_id
     config:
       meta:
         pii: quasi
+    description: C member id of the contract holder.
   - name: member_key
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: plan_ref
     data_tests:
     - relationships:
@@ -308,42 +378,52 @@ models:
     config:
       meta:
         pii: none
+    description: Source plan code namespaced by source and generation (for example C26:P100).
   - name: plan_key
     config:
       meta:
         pii: none
+    description: Unified plan across products and table generations.
   - name: monthly_fee_tax_incl
     config:
       meta:
         pii: none
+    description: Monthly fee including consumption tax.
   - name: monthly_fee_ex_tax
     config:
       meta:
         pii: none
+    description: Monthly fee without consumption tax.
   - name: start_date
     config:
       meta:
         pii: none
+    description: Contract start date.
   - name: end_date
     config:
       meta:
         pii: none
+    description: Contract end date; empty while it runs.
   - name: payer_member_id
     config:
       meta:
         pii: quasi
+    description: C member id of the payer (family plan); empty otherwise.
   - name: status
     config:
       meta:
         pii: none
+    description: Contract status in C (active, paused, ended, migrated).
   - name: last_changed_at
     config:
       meta:
         pii: none
+    description: Time of the latest change record in the CDC log.
   - name: is_deleted
     config:
       meta:
         pii: none
+    description: True if the last change was a delete.
 - name: int_c_contract_log
   description: Both contract table generations in one shape (namespaced plan_ref).
   columns:
@@ -351,54 +431,68 @@ models:
     config:
       meta:
         pii: none
+    description: 'Contract table generation: FY2025 or FY2026 (for a plan: the C generation, empty for
+      D).'
   - name: op
     config:
       meta:
         pii: none
+    description: 'Change operation: I insert, U update, D delete.'
   - name: changed_at
     config:
       meta:
         pii: none
+    description: Time of the change in the source database (UTC).
   - name: lsn
     config:
       meta:
         pii: none
+    description: Log sequence number of the change inside its CDC table.
   - name: contract_id
     config:
       meta:
         pii: none
+    description: Contract identifier (K25-/K26- prefix marks the table generation).
   - name: member_id
     config:
       meta:
         pii: quasi
+    description: C member id of the contract holder.
   - name: plan_ref
     config:
       meta:
         pii: none
+    description: Source plan code namespaced by source and generation (for example C26:P100).
   - name: monthly_fee_tax_incl
     config:
       meta:
         pii: none
+    description: Monthly fee including consumption tax.
   - name: monthly_fee_ex_tax
     config:
       meta:
         pii: none
+    description: Monthly fee without consumption tax.
   - name: start_date
     config:
       meta:
         pii: none
+    description: Contract start date.
   - name: end_date
     config:
       meta:
         pii: none
+    description: Contract end date; empty while it runs.
   - name: payer_member_id
     config:
       meta:
         pii: quasi
+    description: C member id of the payer (family plan); empty otherwise.
   - name: status
     config:
       meta:
         pii: none
+    description: Contract status in C (active, paused, ended, migrated).
 - name: scd_contract
   description: Contract history (SCD2). No-op updates are collapsed; deletes are a final version.
   columns:
@@ -406,18 +500,24 @@ models:
     config:
       meta:
         pii: none
+    description: Contract identifier (K25-/K26- prefix marks the table generation).
   - name: generation
     config:
       meta:
         pii: none
+    description: 'Contract table generation: FY2025 or FY2026 (for a plan: the C generation, empty for
+      D).'
   - name: member_id
     config:
       meta:
         pii: quasi
+    description: C member id of the contract holder.
   - name: member_key
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: plan_ref
     data_tests:
     - relationships:
@@ -427,52 +527,64 @@ models:
     config:
       meta:
         pii: none
+    description: Source plan code namespaced by source and generation (for example C26:P100).
   - name: plan_key
     config:
       meta:
         pii: none
+    description: Unified plan across products and table generations.
   - name: monthly_fee_tax_incl
     config:
       meta:
         pii: none
+    description: Monthly fee including consumption tax.
   - name: monthly_fee_ex_tax
     config:
       meta:
         pii: none
+    description: Monthly fee without consumption tax.
   - name: start_date
     config:
       meta:
         pii: none
+    description: Contract start date.
   - name: end_date
     config:
       meta:
         pii: none
+    description: Contract end date; empty while it runs.
   - name: payer_member_id
     config:
       meta:
         pii: quasi
+    description: C member id of the payer (family plan); empty otherwise.
   - name: status
     config:
       meta:
         pii: none
+    description: Contract status in C (active, paused, ended, migrated).
   - name: valid_from
     config:
       meta:
         pii: none
+    description: Start of this version of the contract (UTC).
   - name: valid_to
     config:
       meta:
         pii: none
+    description: End of this version; empty for the current version.
   - name: is_current
     data_tests:
     - not_null
     config:
       meta:
         pii: none
+    description: True for the version that is valid now (valid_to is empty).
   - name: is_deleted
     config:
       meta:
         pii: none
+    description: True for the version that records a delete.
   data_tests:
   - dbt_utils.unique_combination_of_columns:
       arguments:
@@ -486,71 +598,89 @@ models:
     config:
       meta:
         pii: none
+    description: Product the record comes from (A-D).
   - name: source_member_id
     config:
       meta:
         pii: quasi
+    description: 'The product''s own member identifier (D: its derived key).'
   - name: member_key
     config:
       meta:
         pii: quasi
+    description: member_key as derived for this record.
   - name: link_key
     config:
       meta:
         pii: quasi
+    description: Hash of normalized phone and kana name; the bridge between products that know a person
+      by different identifiers.
   - name: key_method
     config:
       meta:
         pii: none
+    description: 'How member_key was derived: email, phone, phone_kana or source_local.'
   - name: household_key
     config:
       meta:
         pii: quasi
+    description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
+      for.'
   - name: name
     config:
       meta:
         pii: direct
         mask: initial
+    description: Full name as recorded by the highest-priority product (direct personal data).
   - name: name_kana
     config:
       meta:
         pii: direct
         mask: initial
+    description: Name in kana as recorded by the highest-priority product (direct personal data).
   - name: email
     config:
       meta:
         pii: direct
         mask: email_domain
+    description: E-mail address as recorded by the highest-priority product (direct personal data).
   - name: phone
     config:
       meta:
         pii: direct
         mask: phone_last4
+    description: Phone number as recorded by the highest-priority product (direct personal data).
   - name: birth_date
     config:
       meta:
         pii: direct
         mask: birth_year
+    description: Date of birth as recorded by the source (direct personal data).
   - name: health_notes
     config:
       meta:
         pii: sensitive
+    description: Free-text injury or condition declaration from the app (sensitive).
   - name: medical_conditions
     config:
       meta:
         pii: sensitive
+    description: Free-text answers of the gym's intake questionnaire (sensitive).
   - name: joined_at
     config:
       meta:
         pii: quasi
+    description: When the person joined this product.
   - name: is_deleted
     config:
       meta:
         pii: none
+    description: True if the source marks the record deleted.
   - name: source_priority
     config:
       meta:
         pii: none
+    description: Which product wins when several know the same person (1 is highest).
 - name: fct_session
   description: Workouts (A) and gym check-ins (C).
   columns:
@@ -561,36 +691,45 @@ models:
     config:
       meta:
         pii: none
+    description: Session identifier.
   - name: source
     config:
       meta:
         pii: none
+    description: Product the record comes from (A-E).
   - name: session_type
     config:
       meta:
         pii: none
+    description: workout (A) or visit (C).
   - name: member_key
     data_tests:
     - not_null
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: started_at
     config:
       meta:
         pii: none
+    description: Start of the session (UTC).
   - name: session_date_jst
     config:
       meta:
         pii: none
+    description: Calendar date of the session in Tokyo time.
   - name: duration_min
     config:
       meta:
         pii: none
+    description: Workout length in minutes (app workouts only).
   - name: facility_id
     config:
       meta:
         pii: none
+    description: Gym or facility code.
 - name: fct_booking
   description: Bookings (B), latest snapshot; tax-exclusive price with the derived tax-inclusive price.
   columns:
@@ -601,52 +740,65 @@ models:
     config:
       meta:
         pii: none
+    description: 'Booking identifier: tenant_id and the booking number inside the tenant.'
   - name: tenant_id
     config:
       meta:
         pii: none
+    description: Studio (tenant) identifier in product B.
   - name: member_key
     data_tests:
     - not_null
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: booked_at
     config:
       meta:
         pii: none
+    description: When the booking was created (UTC).
   - name: class_start_at
     config:
       meta:
         pii: none
+    description: Start of the class (UTC).
   - name: class_date_jst
     config:
       meta:
         pii: none
+    description: Calendar date of the class in Tokyo time.
   - name: status
     config:
       meta:
         pii: none
+    description: booked, attended, cancelled or no_show.
   - name: price_ex_tax
     config:
       meta:
         pii: none
+    description: Booking price without consumption tax.
   - name: price_tax_incl
     config:
       meta:
         pii: none
+    description: Booking price including consumption tax.
   - name: tax_rate
     config:
       meta:
         pii: none
+    description: Consumption tax rate applied.
   - name: is_deleted
     config:
       meta:
         pii: none
+    description: True if B marks the booking deleted.
   - name: as_of_snapshot
     config:
       meta:
         pii: none
+    description: Date of the B snapshot this row was taken from.
 - name: fct_payment
   description: 'Money from A (in-app purchases) and D (invoices, refunds), tax-inclusive, with the amount
     as the source stated it kept in amount_original.
@@ -660,10 +812,12 @@ models:
     config:
       meta:
         pii: none
+    description: Invoice, refund or purchase identifier.
   - name: source
     config:
       meta:
         pii: none
+    description: Product the record comes from (A-E).
   - name: payment_type
     data_tests:
     - accepted_values:
@@ -674,12 +828,15 @@ models:
     config:
       meta:
         pii: none
+    description: charge or refund.
   - name: member_key
     data_tests:
     - not_null
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: plan_ref
     data_tests:
     - relationships:
@@ -689,30 +846,38 @@ models:
     config:
       meta:
         pii: none
+    description: Plan code for D charges; empty for A purchases.
   - name: occurred_at
     config:
       meta:
         pii: none
+    description: When the money moved (UTC; for D the start of the invoice or refund day in Tokyo).
   - name: amount_ex_tax
     config:
       meta:
         pii: none
+    description: Amount without consumption tax; refunds are negative.
   - name: amount_tax_incl
     config:
       meta:
         pii: none
+    description: Amount including consumption tax; refunds are negative.
   - name: amount_original
     config:
       meta:
         pii: none
+    description: The amount exactly as the source stated it (tax-inclusive for A, tax-exclusive for D);
+      refunds are negative.
   - name: amount_original_basis
     config:
       meta:
         pii: none
+    description: Whether amount_original is tax_incl or ex_tax.
   - name: tax_rate
     config:
       meta:
         pii: none
+    description: Consumption tax rate applied.
 - name: fct_activity
   description: Union of every activity that counts as a member being active (sessions + attended bookings).
   columns:
@@ -723,28 +888,35 @@ models:
     config:
       meta:
         pii: none
+    description: Identifier of the underlying session or booking.
   - name: member_key
     data_tests:
     - not_null
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: occurred_at
     config:
       meta:
         pii: none
+    description: When the activity took place (UTC).
   - name: activity_date_jst
     config:
       meta:
         pii: none
+    description: Calendar date of the activity in Tokyo time.
   - name: activity_type
     config:
       meta:
         pii: none
+    description: 'What the member did: workout, visit or booking_attended.'
   - name: source
     config:
       meta:
         pii: none
+    description: Product the record comes from (A-E).
 - name: dim_member_product
   description: 'One row per (member, product): the products a person is a customer of.'
   columns:
@@ -754,6 +926,8 @@ models:
     config:
       meta:
         pii: quasi
+    description: Canonical member key (hash of the person's identifier; the same person has the same key
+      in every product).
   - name: product
     data_tests:
     - accepted_values:
@@ -766,6 +940,7 @@ models:
     config:
       meta:
         pii: none
+    description: Product the person is a customer of (A-D).
 - name: int_link_map
   description: Each link_key (phone+kana) with the e-mail identity it resolves to and how many e-mail
     identities share it.
@@ -774,11 +949,15 @@ models:
     config:
       meta:
         pii: quasi
+    description: Hash of normalized phone and kana name; the bridge between products that know a person
+      by different identifiers.
   - name: email_member_key
     config:
       meta:
         pii: quasi
+    description: The e-mail based member_key this link resolves to (the smallest one if several).
   - name: n_email_keys
     config:
       meta:
         pii: none
+    description: How many distinct e-mail identities share this link_key.

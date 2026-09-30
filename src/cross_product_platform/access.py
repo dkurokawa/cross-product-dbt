@@ -16,7 +16,7 @@ from typing import Any, Final
 
 import yaml
 
-from .metrics.codegen import generated_columns
+from .metrics.codegen import generated_columns, generated_descriptions
 from .metrics.spec import MetricsSpec
 from .scan import MASKS, PII_CLASSES
 
@@ -84,6 +84,7 @@ class ColumnInfo:
     name: str
     pii: str
     mask: str | None = None
+    description: str = ""
 
 
 def _scope(raw: dict[str, Any], where: str) -> RowScope:
@@ -157,7 +158,9 @@ def _yml_columns(path: Path, key: str) -> dict[str, list[ColumnInfo]]:
             mask = meta.get("mask")
             if pii == "direct" and mask not in MASKS:
                 raise PolicyError(f"{model['name']}.{column['name']}: direct needs a valid mask")
-            columns.append(ColumnInfo(str(column["name"]), str(pii), mask))
+            columns.append(
+                ColumnInfo(str(column["name"]), str(pii), mask, str(column.get("description", "")))
+            )
         out[str(model["name"])] = columns
     return out
 
@@ -168,8 +171,11 @@ def load_columns(repo_root: Path, spec: MetricsSpec) -> dict[str, list[ColumnInf
     columns.update(_yml_columns(repo_root / "dbt/models/silver/_models.yml", "models"))
     columns.update(_yml_columns(repo_root / "dbt/models/gold/_models.yml", "models"))
     columns.update(_yml_columns(repo_root / "dbt/seeds/_seeds.yml", "seeds"))
+    described = generated_descriptions(spec)
     for model, cols in generated_columns(spec).items():
-        columns[model] = [ColumnInfo(name, "none") for name, _ in cols]
+        columns[model] = [
+            ColumnInfo(name, "none", None, described[model][name]) for name, _ in cols
+        ]
     return columns
 
 
@@ -217,6 +223,23 @@ def _sql(role: Role, table: str, columns: list[ColumnInfo], where: str) -> str:
     if where:
         body += f"\n{where}"
     return f"-- {HEADER}\n{body}\n"
+
+
+MASK_TEXT: Final = {
+    "email_domain": "only the domain part",
+    "phone_last4": "only the last four digits",
+    "birth_year": "only the year",
+    "initial": "only the first character",
+}
+
+
+def _out_description(column: ColumnInfo, role: Role) -> str:
+    if column.pii == "direct" and role.direct == "mask":
+        assert column.mask is not None
+        return (
+            f"Masked: {MASK_TEXT[column.mask]} of the original column. {column.description}".strip()
+        )
+    return column.description
 
 
 def _out_class(column: ColumnInfo, role: Role) -> str:
@@ -267,9 +290,11 @@ def generate_access_files(policy: Policy, columns: dict[str, list[ColumnInfo]]) 
                 "model": model_name(role, table),
                 "columns": [name for _, name, _ in visible],
                 "pii": {name: _out_class(c, role) for c, name, _ in visible},
+                "descriptions": {name: _out_description(c, role) for c, name, _ in visible},
             }
             entries = "".join(
-                f"      - name: {name}\n        config:\n          meta:\n"
+                f"      - name: {name}\n        description: "
+                f"{_yaml_str(_out_description(c, role))}\n        config:\n          meta:\n"
                 f"            pii: {_out_class(c, role)}\n"
                 for c, name, _ in visible
             )
