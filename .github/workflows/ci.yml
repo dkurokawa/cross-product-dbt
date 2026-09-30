@@ -48,10 +48,13 @@ jobs:
         run: make demo
 
       - name: Injected one-day gap is detected by row_count_anomaly
+        if: matrix.python-version == '3.12'
         run: make anomaly-check
 
       - name: An unmapped plan code fails the build
+        if: matrix.python-version == '3.12'
         run: make unmapped-check
 
       - name: BigQuery offline compile (fake service-account key, no connection)
+        if: matrix.python-version == '3.12'
         run: make bq-compile
