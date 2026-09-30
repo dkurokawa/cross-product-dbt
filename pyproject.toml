@@ -28,6 +28,7 @@ platform = "cross_product_platform.cli:main"
 [dependency-groups]
 dev = [
     "pytest>=8",
+    "pre-commit>=3.7",
     "pytest-cov>=5",
     "ruff>=0.6",
     "mypy>=1.10",

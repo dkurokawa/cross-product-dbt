@@ -30,3 +30,9 @@ repos:
         language: system
         pass_filenames: false
         files: ^dbt/models/
+      - id: generated-files-up-to-date
+        name: generated metrics and access files are up to date
+        entry: bash -c 'uv run platform metrics check --only-generated && uv run platform access check'
+        language: system
+        pass_filenames: false
+        files: ^(metrics|policies|dbt/models)/
