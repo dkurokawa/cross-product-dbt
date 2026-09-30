@@ -725,3 +725,16 @@ sources:
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/_meta/landing_log/*.parquet')"
+
+  - name: audit
+    description: "The query gateway's audit events (eventlake), one event per call. Written after the first dbt build."
+    schema: raw_audit
+    tables:
+      - name: query_executed
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_AUDIT_ROOT', 'build/audit') }}/query_executed/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+      - name: query_denied
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_AUDIT_ROOT', 'build/audit') }}/query_denied/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"

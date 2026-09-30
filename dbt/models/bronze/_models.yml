@@ -168,3 +168,14 @@ models:
 
   - name: brz_landing_log
     description: "Files and rows accepted by the landing step per partition."
+
+  - name: brz_audit_query_executed
+    description: "Gateway audit events for queries that ran, de-duplicated by event_id (earliest recorded_at wins)."
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+  - name: brz_audit_query_denied
+    description: "Gateway audit events for refused queries, de-duplicated by event_id."
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]

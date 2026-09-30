@@ -78,3 +78,70 @@ models:
         - source
         - dataset
         - partition_date
+- name: audit_access_log
+  description: 'One row per query-gateway call (executed or denied): principal (self-declared), role,
+    normalized SQL with literals removed, referenced tables and columns, sensitive columns mentioned,
+    rows returned or the deny reason. Built after the gateway has written events.'
+  columns:
+  - name: event_id
+    config:
+      meta:
+        pii: none
+    data_tests:
+    - unique
+    - not_null
+  - name: occurred_at
+    config:
+      meta:
+        pii: none
+  - name: outcome
+    config:
+      meta:
+        pii: none
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - executed
+          - denied
+    - not_null
+  - name: principal
+    config:
+      meta:
+        pii: quasi
+  - name: role
+    config:
+      meta:
+        pii: none
+  - name: sql_hash
+    config:
+      meta:
+        pii: none
+  - name: sql_normalized
+    config:
+      meta:
+        pii: none
+  - name: referenced_tables
+    config:
+      meta:
+        pii: none
+  - name: referenced_columns
+    config:
+      meta:
+        pii: none
+  - name: sensitive_columns
+    config:
+      meta:
+        pii: none
+  - name: touched_sensitive
+    config:
+      meta:
+        pii: none
+  - name: row_count
+    config:
+      meta:
+        pii: none
+  - name: deny_reason
+    config:
+      meta:
+        pii: none

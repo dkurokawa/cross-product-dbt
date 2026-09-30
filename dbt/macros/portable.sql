@@ -110,3 +110,6 @@
 
 {# A date moved by n days. #}
 {% macro add_days(expr, n) %}cast({{ dbt.dateadd('day', n, expr) }} as date){% endmacro %}
+
+{# A list column as comma-separated text. #}
+{% macro list_to_text(expr) %}array_to_string({{ expr }}, ','){% endmacro %}

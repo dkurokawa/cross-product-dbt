@@ -1,0 +1,66 @@
+version: 2
+
+# The inputs are written as SQL (format: sql) because the audit relations only exist after the
+# gateway has written events; these tests must not depend on them.
+
+unit_tests:
+  - name: audit_events_are_deduplicated_by_the_eventlake_rule
+    description: >
+      An event delivered twice counts once: the copy with the earliest recorded_at wins, and a
+      tie is broken by the source file path.
+    model: brz_audit_query_executed
+    given:
+      - input: source('audit', 'query_executed')
+        format: sql
+        rows: |
+          select 'e1' as event_id, timestamptz '2026-09-30 10:00:00+00' as occurred_at,
+                 timestamptz '2026-09-30 10:00:05+00' as recorded_at, 'b.parquet' as filename,
+                 'ann' as principal, 'analyst' as role, 'h1' as sql_hash, 'q' as sql_normalized,
+                 ['t']::varchar[] as referenced_tables, ['t.c']::varchar[] as referenced_columns,
+                 []::varchar[] as sensitive_columns, false as touched_sensitive, 1 as row_count
+          union all
+          select 'e1', timestamptz '2026-09-30 10:00:00+00', timestamptz '2026-09-30 10:00:01+00',
+                 'z.parquet', 'ann', 'analyst', 'h1', 'q', ['t']::varchar[], ['t.c']::varchar[],
+                 []::varchar[], false, 1
+          union all
+          select 'e2', timestamptz '2026-09-30 10:01:00+00', timestamptz '2026-09-30 10:01:00+00',
+                 'y.parquet', 'bob', 'analyst', 'h2', 'q', ['t']::varchar[], ['t.c']::varchar[],
+                 []::varchar[], false, 2
+          union all
+          select 'e2', timestamptz '2026-09-30 10:01:00+00', timestamptz '2026-09-30 10:01:00+00',
+                 'a.parquet', 'bob', 'analyst', 'h2', 'q', ['t']::varchar[], ['t.c']::varchar[],
+                 []::varchar[], false, 9
+    expect:
+      rows:
+        - {event_id: e1, row_count: 1}
+        - {event_id: e2, row_count: 9}
+
+  - name: sensitive_reads_and_denied_attempts_are_both_in_the_audit_log
+    description: >
+      A privacy_officer query that touched health_notes is an executed row with the sensitive
+      column named; the analyst's attempt at it is a denied row with the reason.
+    model: audit_access_log
+    given:
+      - input: ref('brz_audit_query_executed')
+        format: sql
+        rows: |
+          select 'e1' as event_id, timestamptz '2026-09-30 10:00:00+00' as occurred_at,
+                 'auditor' as principal, 'privacy_officer' as role, 'h1' as sql_hash,
+                 'select health_notes from dim_member' as sql_normalized,
+                 ['dim_member']::varchar[] as referenced_tables,
+                 ['dim_member.health_notes']::varchar[] as referenced_columns,
+                 ['health_notes']::varchar[] as sensitive_columns, true as touched_sensitive,
+                 12 as row_count
+      - input: ref('brz_audit_query_denied')
+        format: sql
+        rows: |
+          select 'd1' as event_id, timestamptz '2026-09-30 10:05:00+00' as occurred_at,
+                 'nosy' as principal, 'analyst' as role, 'h2' as sql_hash,
+                 'select health_notes from dim_member' as sql_normalized,
+                 []::varchar[] as referenced_tables, ['health_notes']::varchar[] as referenced_columns,
+                 ['health_notes']::varchar[] as sensitive_columns, true as touched_sensitive,
+                 'column check failed' as deny_reason
+    expect:
+      rows:
+        - {event_id: e1, outcome: executed, principal: auditor, role: privacy_officer, sensitive_columns: health_notes, touched_sensitive: true, row_count: 12, deny_reason: null}
+        - {event_id: d1, outcome: denied, principal: nosy, role: analyst, sensitive_columns: health_notes, touched_sensitive: true, row_count: null, deny_reason: "column check failed"}

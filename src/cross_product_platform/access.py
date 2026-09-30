@@ -245,7 +245,14 @@ def generate_access_files(policy: Policy, columns: dict[str, list[ColumnInfo]]) 
     """Every generated file as ``{repo-relative path: content}``."""
     files: dict[str, str] = {}
     model_entries: list[str] = []
-    allowlist: dict[str, Any] = {"generated": HEADER, "roles": {}}
+    sensitive = sorted({c.name for cols in columns.values() for c in cols if c.pii == "sensitive"})
+    allowlist: dict[str, Any] = {
+        "generated": HEADER,
+        # names of columns declared sensitive anywhere: the gateway audit flags a query that
+        # merely mentions one, even when the role cannot read it
+        "sensitive_columns": sensitive,
+        "roles": {},
+    }
     exposed = _exposed(policy, columns)
     for role in policy.roles:
         granted: dict[str, Any] = {}
@@ -259,6 +266,7 @@ def generate_access_files(policy: Policy, columns: dict[str, list[ColumnInfo]]) 
             granted[table] = {
                 "model": model_name(role, table),
                 "columns": [name for _, name, _ in visible],
+                "pii": {name: _out_class(c, role) for c, name, _ in visible},
             }
             entries = "".join(
                 f"      - name: {name}\n        config:\n          meta:\n"

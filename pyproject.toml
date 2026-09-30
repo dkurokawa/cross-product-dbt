@@ -17,6 +17,9 @@ dependencies = [
     "duckdb>=1.5.0",
     "dbt-core>=1.10",
     "dbt-duckdb>=1.10",
+    "sqlglot>=25",
+    # 2.2: FastMCP was replaced by mcp.server.mcpserver.MCPServer (verified with a stdio round trip).
+    "mcp>=2.2,<3",
 ]
 
 [project.scripts]
@@ -57,7 +60,7 @@ strict = true
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["duckdb.*", "pyarrow.*", "pandera.*", "faker.*", "eventlake.*", "yaml.*"]
+module = ["duckdb.*", "pyarrow.*", "pandera.*", "faker.*", "eventlake.*", "yaml.*", "sqlglot.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

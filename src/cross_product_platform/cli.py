@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections.abc import Sequence
 from datetime import date
@@ -20,6 +21,7 @@ from .access import (
 )
 from .config import GeneratorConfig
 from .dialect_lint import scan_directory
+from .gateway import MAX_LIMIT, Gateway, GatewayError, QueryDeniedError
 from .identity import MissingSaltError
 from .ingest import LakeNotEmptyError, run_ingest
 from .metrics.check import (
@@ -31,7 +33,14 @@ from .metrics.check import (
 )
 from .metrics.codegen import generate_files
 from .metrics.spec import SpecError, load_spec
+from .roles import build_role_databases, load_allowlist
 from .scan import check_model_declarations, load_source_declarations, scan_lake
+
+
+def _gateway_paths(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--allowlist", type=Path, default=Path("policies/gateway_allowlist.json"))
+    parser.add_argument("--warehouse-dir", type=Path, default=Path("build/warehouse"))
+    parser.add_argument("--audit-root", type=Path, default=Path("build/audit"))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -97,6 +106,18 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "check":
             p.add_argument("--manifest", type=Path, default=None, help="also check dbt's manifest")
 
+    roles = sub.add_parser("build-roles", help="create access_<role>.duckdb for every role")
+    roles.add_argument("--warehouse", type=Path, default=Path("build/warehouse/platform.duckdb"))
+    roles.add_argument("--allowlist", type=Path, default=Path("policies/gateway_allowlist.json"))
+    roles.add_argument("--out-dir", type=Path, default=Path("build/warehouse"))
+
+    query = sub.add_parser("query", help="run one SELECT through the gateway (audited)")
+    query.add_argument("--role", required=True)
+    query.add_argument("--principal", required=True, help="who is asking (self-declared)")
+    query.add_argument("--limit", type=int, default=MAX_LIMIT)
+    _gateway_paths(query)
+    query.add_argument("sql")
+
     lint = sub.add_parser("lint-dialect", help="grep dbt models for warehouse-specific functions")
     lint.add_argument("models_dir", type=Path, nargs="?", default=Path("dbt/models"))
     return parser
@@ -159,6 +180,37 @@ def _metrics(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def _build_roles(args: argparse.Namespace) -> int:
+    built = build_role_databases(load_allowlist(args.allowlist), args.warehouse, args.out_dir)
+    for role, n in built.items():
+        print(f"build-roles: {role}: {n} tables")
+    return 0
+
+
+def _query(args: argparse.Namespace) -> int:
+    try:
+        gateway = Gateway(
+            args.role,
+            args.principal,
+            allowlist_path=args.allowlist,
+            warehouse_dir=args.warehouse_dir,
+            audit_root=args.audit_root,
+        )
+        result = gateway.query(args.sql, args.limit)
+    except GatewayError as err:
+        print(f"query: {err}", file=sys.stderr)
+        return 2
+    except QueryDeniedError as err:
+        print(f"query denied: {err.reason}", file=sys.stderr)
+        return 1
+    for row in result.rows:
+        print(
+            json.dumps(dict(zip(result.columns, row, strict=True)), default=str, ensure_ascii=False)
+        )
+    print(f"query: {result.row_count} row(s)", file=sys.stderr)
+    return 0
+
+
 def _access(args: argparse.Namespace) -> int:
     try:
         policy = load_policy(args.policy)
@@ -202,6 +254,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "ingest":
         return _ingest(args)
+    if args.command == "build-roles":
+        return _build_roles(args)
+    if args.command == "query":
+        return _query(args)
     if args.command == "access":
         return _access(args)
     if args.command == "scan":
