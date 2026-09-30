@@ -1,0 +1,11 @@
+# Column-name aliases for product E (the hand-maintained sales sheet).
+#
+# Each canonical column lists every spelling seen so far. A header that matches no
+# spelling is NOT guessed at: the whole file is quarantined so a person can decide
+# whether it is a new alias (add it here) or a broken export.
+company_name: ["会社名", "企業名"]
+contact_name: ["担当者", "担当者名"]
+seats: ["契約人数", "利用人数"]
+monthly_fee_yen: ["月額料金", "月額(円)"]
+contract_status: ["ステータス", "契約状況"]
+sales_owner: ["営業担当", "営業担当者"]
