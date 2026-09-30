@@ -45,6 +45,7 @@ mask_initial = {% macro mask_initial(expr) %}left({{ expr }}, 1) || '***'{% endm
 list_to_text = {% macro list_to_text(expr) %}array_to_string({{ expr }}, ','){% endmacro %}
 audit_events = {% macro audit_events(name) %}audit_{{ name }}{% endmacro %}
 month_spine = {% macro month_spine(first_month, last_month) %}select cast({{ first_month }} as date) as date_month, cast({{ last_month }} as date) as last_month{% endmacro %}
+pseudonym = {% macro pseudonym(expr, product) %}md5(concat('{{ product }}', ':', {{ expr }})){% endmacro %}
 row_hash = {% macro row_hash(columns) %}md5(concat({{ columns | join(', ') }})){% endmacro %}
 
 # `source`, `name`, `value`, `file`, `partition_date`... are ordinary column names in every

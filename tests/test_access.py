@@ -303,3 +303,69 @@ def test_the_audit_log_is_readable_by_the_privacy_officer_only(files: dict[str, 
     assert "audit_access_log" not in "".join(
         v for k, v in files.items() if k.endswith(".sql") and "privacy_officer" not in k
     )
+
+
+KEY_TABLES = {
+    "product_a": ["dim_member", "dim_household", "fct_session", "fct_payment", "fct_activity"],
+    "product_b": ["dim_member", "dim_household", "fct_booking", "fct_activity"],
+    "product_c": ["dim_member", "dim_household", "fct_session", "fct_activity", "scd_contract"],
+    "product_d": ["dim_member", "dim_household", "fct_payment"],
+}
+
+
+def test_product_roles_never_see_a_canonical_key_only_a_product_scoped_pseudonym(
+    files: dict[str, str],
+) -> None:
+    """Two product roles must not be able to compare notes through member_key / household_key."""
+    for role, tables in KEY_TABLES.items():
+        product = role.removeprefix("product_").upper()
+        for table in tables:
+            sql = files[f"dbt/models/access/acc_{role}__{table}.sql"]
+            for key in ("member_key", "household_key"):
+                lines = [line.strip() for line in sql.splitlines() if key in line]
+                for line in lines:
+                    if "from" in line:
+                        continue
+                    assert line.startswith(f"{{{{ pseudonym('{key}', '{product}') }}}} as {key}"), (
+                        role, table, line,
+                    )  # fmt: skip
+    for role in ("analyst", "privacy_officer"):
+        sql = files[f"dbt/models/access/acc_{role}__dim_member.sql"]
+        assert "pseudonym" not in sql and "    member_key," in sql
+
+
+def test_a_derived_hash_id_is_not_shown_to_the_product_that_only_knows_the_hash(
+    files: dict[str, str],
+) -> None:
+    """For D the local id is its phone+kana hash: member_key <> source_member_id would reveal
+    which customers were matched to another product."""
+    allow = json.loads(files["policies/gateway_allowlist.json"])
+    roles = allow["roles"]
+    assert "source_member_id" not in roles["product_d"]["tables"]["dim_member"]["columns"]
+    for role in ("product_a", "product_b", "product_c"):
+        assert "source_member_id" in roles[role]["tables"]["dim_member"]["columns"], role
+    for role, body in roles.items():
+        if role.startswith("product_"):
+            for table, spec in body["tables"].items():
+                assert "link_key" not in spec["columns"], (role, table)
+    officer = roles["privacy_officer"]["tables"]["dim_member"]["columns"]
+    assert "member_key" in officer
+
+
+def test_pseudonymized_keys_are_described_as_such(files: dict[str, str]) -> None:
+    allow = json.loads(files["policies/gateway_allowlist.json"])
+    text = allow["roles"]["product_b"]["tables"]["dim_member"]["descriptions"]["member_key"]
+    assert "Pseudonym" in text and "product B" in text
+    canonical = allow["roles"]["analyst"]["tables"]["dim_member"]["descriptions"]["member_key"]
+    assert "Pseudonym" not in canonical
+
+
+def test_pseudonym_roles_need_exactly_one_product() -> None:
+    doc = raw()
+    doc["roles"]["analyst"]["keys"] = "pseudonym"
+    with pytest.raises(PolicyError, match="exactly one product"):
+        parse_policy(doc)
+    doc = raw()
+    doc["roles"]["product_a"]["keys"] = "secret"
+    with pytest.raises(PolicyError, match="keys must be"):
+        parse_policy(doc)

@@ -858,7 +858,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
+        description: "Pseudonym of the key, scoped to product A: consistent inside this product, not comparable with any other product. Canonical member key (same hash as in dim_member; says nothing about other products)."
         config:
           meta:
             pii: quasi
@@ -868,7 +868,7 @@ models:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Pseudonym of the key, scoped to product A: consistent inside this product, not comparable with any other product. Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
@@ -916,7 +916,7 @@ models:
           meta:
             pii: none
       - name: household_key
-        description: "Household key of the product's own records."
+        description: "Pseudonym of the key, scoped to product A: consistent inside this product, not comparable with any other product. Household key of the product's own records."
         config:
           meta:
             pii: quasi
@@ -954,7 +954,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product A: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -997,7 +997,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product A: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -1045,7 +1045,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product A: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -1438,7 +1438,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
+        description: "Pseudonym of the key, scoped to product B: consistent inside this product, not comparable with any other product. Canonical member key (same hash as in dim_member; says nothing about other products)."
         config:
           meta:
             pii: quasi
@@ -1448,7 +1448,7 @@ models:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Pseudonym of the key, scoped to product B: consistent inside this product, not comparable with any other product. Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
@@ -1496,7 +1496,7 @@ models:
           meta:
             pii: none
       - name: household_key
-        description: "Household key of the product's own records."
+        description: "Pseudonym of the key, scoped to product B: consistent inside this product, not comparable with any other product. Household key of the product's own records."
         config:
           meta:
             pii: quasi
@@ -1534,7 +1534,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product B: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -1572,7 +1572,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product B: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -1640,7 +1640,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product B: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -1688,7 +1688,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product B: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -2081,7 +2081,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
+        description: "Pseudonym of the key, scoped to product C: consistent inside this product, not comparable with any other product. Canonical member key (same hash as in dim_member; says nothing about other products)."
         config:
           meta:
             pii: quasi
@@ -2091,7 +2091,7 @@ models:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Pseudonym of the key, scoped to product C: consistent inside this product, not comparable with any other product. Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
@@ -2139,7 +2139,7 @@ models:
           meta:
             pii: none
       - name: household_key
-        description: "Household key of the product's own records."
+        description: "Pseudonym of the key, scoped to product C: consistent inside this product, not comparable with any other product. Household key of the product's own records."
         config:
           meta:
             pii: quasi
@@ -2215,7 +2215,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product C: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -2258,7 +2258,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product C: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -2306,7 +2306,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product C: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -2349,7 +2349,7 @@ models:
           meta:
             pii: quasi
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product C: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -2782,17 +2782,12 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
-        config:
-          meta:
-            pii: quasi
-      - name: source_member_id
-        description: "The product's own member identifier (D: its derived key)."
+        description: "Pseudonym of the key, scoped to product D: consistent inside this product, not comparable with any other product. Canonical member key (same hash as in dim_member; says nothing about other products)."
         config:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Pseudonym of the key, scoped to product D: consistent inside this product, not comparable with any other product. Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
@@ -2840,7 +2835,7 @@ models:
           meta:
             pii: none
       - name: household_key
-        description: "Household key of the product's own records."
+        description: "Pseudonym of the key, scoped to product D: consistent inside this product, not comparable with any other product. Household key of the product's own records."
         config:
           meta:
             pii: quasi
@@ -2916,7 +2911,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product D: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -2959,7 +2954,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product D: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -3007,7 +3002,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product D: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -3463,7 +3458,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product E: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -3506,7 +3501,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product E: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi
@@ -3554,7 +3549,7 @@ models:
           meta:
             pii: none
       - name: member_key
-        description: "Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
+        description: "Pseudonym of the key, scoped to product E: consistent inside this product, not comparable with any other product. Canonical member key (hash of the person's identifier; the same person has the same key in every product)."
         config:
           meta:
             pii: quasi

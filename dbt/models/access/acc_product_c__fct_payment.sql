@@ -3,7 +3,7 @@ select
     payment_id,
     source,
     payment_type,
-    member_key,
+    {{ pseudonym('member_key', 'C') }} as member_key,
     plan_ref,
     occurred_at,
     amount_ex_tax,

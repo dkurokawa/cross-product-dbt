@@ -2,7 +2,7 @@
 select
     booking_id,
     tenant_id,
-    member_key,
+    {{ pseudonym('member_key', 'B') }} as member_key,
     booked_at,
     class_start_at,
     class_date_jst,

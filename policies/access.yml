@@ -22,11 +22,11 @@ roles:
     products: all
     sensitive: exclude
     direct: mask
-  product_a: {description: Only what product A itself knows (its rows, its own attributes); masked; no sensitive columns., products: [A], sensitive: exclude, direct: mask}
-  product_b: {description: Only what product B itself knows (its rows, its own attributes); masked; no sensitive columns., products: [B], sensitive: exclude, direct: mask}
-  product_c: {description: Only what product C itself knows (its rows, its own attributes); masked; no sensitive columns., products: [C], sensitive: exclude, direct: mask}
-  product_d: {description: Only what product D itself knows (its rows, its own attributes); masked; no sensitive columns., products: [D], sensitive: exclude, direct: mask}
-  product_e: {description: Only what product E itself knows (its rows, its own attributes); masked; no sensitive columns., products: [E], sensitive: exclude, direct: mask}
+  product_a: {keys: pseudonym, description: Only what product A itself knows (its rows, its own attributes); masked; no sensitive columns., products: [A], sensitive: exclude, direct: mask}
+  product_b: {keys: pseudonym, description: Only what product B itself knows (its rows, its own attributes); masked; no sensitive columns., products: [B], sensitive: exclude, direct: mask}
+  product_c: {keys: pseudonym, description: Only what product C itself knows (its rows, its own attributes); masked; no sensitive columns., products: [C], sensitive: exclude, direct: mask}
+  product_d: {keys: pseudonym, description: Only what product D itself knows (its rows, its own attributes); masked; no sensitive columns., products: [D], sensitive: exclude, direct: mask}
+  product_e: {keys: pseudonym, description: Only what product E itself knows (its rows, its own attributes); masked; no sensitive columns., products: [E], sensitive: exclude, direct: mask}
   privacy_officer:
     description: Audit role. Everything, including sensitive columns and unmasked personal data.
     products: all
@@ -41,7 +41,10 @@ roles:
 #   column  a column that holds the product: rows where it equals the role's product
 #   fixed   the table belongs to one product: only that product's role gets it
 tables:
-  # The cross-product person and household tables go only to roles that see every product.
+  # Roles with `keys: pseudonym` never see a canonical member_key or household_key: every key
+# column is replaced by a pseudonym scoped to the role's product, so product roles cannot compare
+# notes (and a derived-hash id such as D's source_member_id is dropped for that product).
+# The cross-product person and household tables go only to roles that see every product.
   # Product roles get, under the same names, tables built from their own product's records alone
   # (no attribute coalesced from another product, no cross-product flags or counts).
   - {name: dim_member, layer: silver, audience: cross_product, row_scope: {kind: none}}

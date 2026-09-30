@@ -47,6 +47,9 @@ class Role:
     products: tuple[str, ...] | None  # None = all products
     sensitive: str
     direct: str
+    #: ``canonical`` (cross-product keys as they are) or ``pseudonym`` (every key column is
+    #: replaced by a pseudonym scoped to the role's single product)
+    keys: str = "canonical"
 
 
 @dataclass(frozen=True)
@@ -101,6 +104,10 @@ class ColumnInfo:
     pii: str
     mask: str | None = None
     description: str = ""
+    #: a key column (member_key, household_key): pseudonymized for product roles
+    key: bool = False
+    #: products that must not see this column (it is a derived hash there, not their own id)
+    omit_for: tuple[str, ...] = ()
 
 
 def _scope(raw: dict[str, Any], where: str) -> RowScope:
@@ -170,6 +177,11 @@ def parse_policy(raw: dict[str, Any]) -> Policy:
             raise PolicyError(f"role {name}: sensitive must be exclude or include")
         if item.get("direct") not in {"mask", "clear"}:
             raise PolicyError(f"role {name}: direct must be mask or clear")
+        keys = str(item.get("keys", "canonical"))
+        if keys not in {"canonical", "pseudonym"}:
+            raise PolicyError(f"role {name}: keys must be canonical or pseudonym")
+        if keys == "pseudonym" and (products == "all" or len(products) != 1):
+            raise PolicyError(f"role {name}: pseudonym keys need exactly one product")
         roles.append(
             Role(
                 name=str(name),
@@ -177,6 +189,7 @@ def parse_policy(raw: dict[str, Any]) -> Policy:
                 products=None if products == "all" else tuple(str(p) for p in products),
                 sensitive=str(item["sensitive"]),
                 direct=str(item["direct"]),
+                keys=keys,
             )
         )
     if not roles:
@@ -209,7 +222,14 @@ def _yml_columns(path: Path, key: str) -> dict[str, list[ColumnInfo]]:
             if pii == "direct" and mask not in MASKS:
                 raise PolicyError(f"{model['name']}.{column['name']}: direct needs a valid mask")
             columns.append(
-                ColumnInfo(str(column["name"]), str(pii), mask, str(column.get("description", "")))
+                ColumnInfo(
+                    str(column["name"]),
+                    str(pii),
+                    mask,
+                    str(column.get("description", "")),
+                    bool(meta.get("key", False)),
+                    tuple(str(p) for p in meta.get("omit_for", [])),
+                )
             )
         out[str(model["name"])] = columns
     return out
@@ -256,6 +276,12 @@ def _visible(role: Role, columns: list[ColumnInfo]) -> list[tuple[ColumnInfo, st
     for c in columns:
         if c.pii == "sensitive" and role.sensitive == "exclude":
             continue
+        if role.products is not None and set(role.products) & set(c.omit_for):
+            continue
+        if c.key and role.keys == "pseudonym":
+            assert role.products is not None
+            out.append((c, c.name, f"{{{{ pseudonym('{c.name}', '{role.products[0]}') }}}}"))
+            continue
         if c.pii == "direct" and role.direct == "mask":
             assert c.mask is not None
             macro, suffix = MASK_RULES[c.mask]
@@ -287,6 +313,12 @@ MASK_TEXT: Final = {
 
 
 def _out_description(column: ColumnInfo, role: Role) -> str:
+    if column.key and role.keys == "pseudonym":
+        return (
+            f"Pseudonym of the key, scoped to product {role.products[0] if role.products else ''}: "
+            "consistent inside this product, not comparable with any other product. "
+            f"{column.description}"
+        ).strip()
     if column.pii == "direct" and role.direct == "mask":
         assert column.mask is not None
         return (

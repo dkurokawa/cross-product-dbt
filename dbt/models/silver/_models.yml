@@ -24,6 +24,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: link_ambiguous
@@ -47,6 +48,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: 'Canonical member key: the same person in different products has the same key.'
   - name: household_key
     data_tests:
@@ -54,6 +56,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Household of the highest-priority record.
   - name: key_method
     config:
@@ -140,6 +143,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
       for.'
   - name: n_members
@@ -308,6 +312,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: link_key
@@ -325,6 +330,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
       for.'
   - name: last_changed_at
@@ -363,6 +369,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: plan_ref
@@ -512,6 +519,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: plan_ref
@@ -604,6 +612,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: member_key as derived for this record.
   - name: link_key
     config:
@@ -620,6 +629,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
       for.'
   - name: name
@@ -704,6 +714,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: started_at
@@ -748,6 +759,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: booked_at
@@ -831,6 +843,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: plan_ref
@@ -891,6 +904,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: occurred_at
@@ -922,6 +936,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (hash of the person's identifier; the same person has the same key
       in every product).
   - name: product
@@ -975,6 +990,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: member_key as derived for this record.
   - name: link_key
     config:
@@ -991,6 +1007,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
       for.'
   - name: name
@@ -1062,16 +1079,20 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
     description: Canonical member key (same hash as in dim_member; says nothing about other products).
   - name: source_member_id
     config:
       meta:
         pii: quasi
+        omit_for:
+        - D
     description: 'The product''s own member identifier (D: its derived key).'
   - name: household_key
     config:
       meta:
         pii: quasi
+        key: true
     description: 'Household key: hash of the payer identity, shared by the payer and the people they pay
       for.'
   - name: key_method
@@ -1144,6 +1165,7 @@ models:
     config:
       meta:
         pii: quasi
+        key: true
   - name: n_members
     description: Members of the household in this product.
     config:

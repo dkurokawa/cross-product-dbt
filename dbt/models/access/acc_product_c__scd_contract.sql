@@ -3,7 +3,7 @@ select
     contract_id,
     generation,
     member_id,
-    member_key,
+    {{ pseudonym('member_key', 'C') }} as member_key,
     plan_ref,
     plan_key,
     monthly_fee_tax_incl,

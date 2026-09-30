@@ -30,3 +30,17 @@
 
 {# A name -> its first character. #}
 {% macro mask_initial(expr) %}left({{ expr }}, 1) || '***'{% endmacro %}
+
+{#
+  Product-scoped pseudonym of a key (design: product roles never see canonical keys).
+  member_key and household_key are already salted HMACs, so hashing them again with the product
+  needs no salt in SQL: the result is consistent inside one product (its tables still join) and
+  cannot be matched to another product's or to the canonical key.
+#}
+{% macro pseudonym(expr, product) %}
+    {{ return(adapter.dispatch('pseudonym', 'platform')(expr, product)) }}
+{% endmacro %}
+
+{% macro default__pseudonym(expr, product) %}sha256(concat('{{ product }}', ':', {{ expr }})){% endmacro %}
+
+{% macro bigquery__pseudonym(expr, product) %}to_hex(sha256(concat('{{ product }}', ':', {{ expr }}))){% endmacro %}

@@ -3,7 +3,7 @@ select
     session_id,
     source,
     session_type,
-    member_key,
+    {{ pseudonym('member_key', 'E') }} as member_key,
     started_at,
     session_date_jst,
     duration_min,
