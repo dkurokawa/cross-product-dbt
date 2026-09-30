@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  # Demo-only salt for the member_key HMAC (synthetic data; not a secret).
+  PLATFORM_HMAC_SALT: demo-only-salt-not-a-secret
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --locked --all-groups
+
+      - name: Lint (ruff check)
+        run: uv run ruff check .
+
+      - name: Format check (ruff format)
+        run: uv run ruff format --check .
+
+      - name: Type check (mypy --strict)
+        run: uv run mypy --strict src tests
+
+      - name: Test (pytest + coverage)
+        run: uv run pytest --cov=cross_product_platform --cov-fail-under=90
+
+      - name: Lint SQL (sqlfluff, dialect=duckdb, jinja templater)
+        run: make lint-sql
+
+      - name: Dialect denylist (warehouse-specific functions in models)
+        run: make lint-dialect
+
+      - name: Demo (ingest -> dbt build -> tests -> freshness) on DuckDB
+        run: make demo
+
+      - name: Injected one-day gap is detected by row_count_anomaly
+        run: make anomaly-check
+
+      - name: BigQuery offline compile (fake service-account key, no connection)
+        run: make bq-compile

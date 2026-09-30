@@ -1,0 +1,32 @@
+# Local hooks so the versions are exactly the ones pinned in uv.lock.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --no-cache
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --no-cache --check
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy --strict
+        entry: uv run mypy --strict src tests
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: sqlfluff
+        name: sqlfluff lint
+        entry: uv run sqlfluff lint dbt/models
+        language: system
+        pass_filenames: false
+        files: ^dbt/(models|macros)/
+      - id: dialect-denylist
+        name: dialect denylist
+        entry: uv run python scripts/lint_dialect.py
+        language: system
+        pass_filenames: false
+        files: ^dbt/models/

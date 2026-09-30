@@ -1,0 +1,29 @@
+name: platform
+version: "0.1.0"
+config-version: 2
+
+profile: platform
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "../build/dbt_target"
+clean-targets: ["../build/dbt_target", "dbt_packages"]
+
+vars:
+  # Root of the landing area written by `platform ingest`. Local path in this phase.
+  landing_root: "{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}"
+
+models:
+  platform:
+    bronze:
+      +materialized: table
+      +schema: bronze
+    silver:
+      +materialized: table
+      +schema: silver
+
+seeds:
+  platform:
+    +schema: silver

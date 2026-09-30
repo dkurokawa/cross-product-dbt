@@ -1,0 +1,23 @@
+# Profiles for the `platform` dbt project. No secret is stored here.
+#
+# duckdb   : default; local file, used by `make demo` and CI.
+# bigquery : used ONLY for `dbt compile --target bigquery --no-introspect
+#            --no-populate-cache` in CI. The key file is a throwaway service-account
+#            JSON generated at run time (scripts/fake_bq_keyfile.sh); nothing connects.
+platform:
+  target: duckdb
+  outputs:
+    duckdb:
+      type: duckdb
+      path: "{{ env_var('PLATFORM_WAREHOUSE', 'build/warehouse/platform.duckdb') }}"
+      threads: 4
+      settings:
+        TimeZone: UTC
+    bigquery:
+      type: bigquery
+      method: service-account
+      project: offline-compile-check
+      dataset: platform
+      location: asia-northeast1
+      threads: 4
+      keyfile: "{{ env_var('BQ_OFFLINE_KEYFILE', '/nonexistent/keyfile.json') }}"
