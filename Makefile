@@ -15,7 +15,7 @@ DBT := uv run dbt
 DBT_ARGS := --project-dir dbt --profiles-dir dbt
 
 .PHONY: demo ingest deps dbt-build freshness test lint lint-py lint-sql lint-dialect \
-	bq-compile anomaly-check
+	bq-compile anomaly-check unmapped-check
 
 demo: ingest deps dbt-build freshness
 
@@ -40,7 +40,7 @@ lint: lint-py lint-sql lint-dialect
 lint-py:
 	uv run ruff check --no-cache .
 	uv run ruff format --no-cache --check .
-	uv run mypy --strict src tests
+	uv run mypy --strict src tests scripts
 
 lint-sql:
 	uv run sqlfluff lint dbt/models
@@ -61,3 +61,7 @@ bq-compile: deps
 # row_count_anomaly test warns about exactly that day (and not on the clean lake).
 anomaly-check: deps
 	uv run python scripts/check_anomaly_detected.py
+
+# An unmapped plan code must fail a test, not pass quietly.
+unmapped-check: deps
+	uv run python scripts/check_unmapped_plan_fails.py

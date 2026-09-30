@@ -40,6 +40,38 @@ models:
       - name: member_id
         data_tests: [unique, not_null]
 
+  - name: c_contract_current
+    description: "Latest state per contract, either table generation."
+    columns:
+      - name: contract_id
+        data_tests: [unique, not_null]
+      - name: plan_ref
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_plan')
+                field: plan_ref
+
+  - name: int_c_contract_log
+    description: "Both contract table generations in one shape (namespaced plan_ref)."
+
+  - name: scd_contract
+    description: "Contract history (SCD2). No-op updates are collapsed; deletes are a final version."
+    columns:
+      - name: plan_ref
+        data_tests:
+          # An unmapped plan code must fail the build, not quietly become NULL.
+          - relationships:
+              arguments:
+                to: ref('dim_plan')
+                field: plan_ref
+      - name: is_current
+        data_tests: [not_null]
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [contract_id, valid_from]
+
   - name: int_member_source_rows
     description: "Current member record per product with the landing-time keys."
 

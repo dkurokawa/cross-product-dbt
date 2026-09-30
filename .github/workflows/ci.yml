@@ -33,7 +33,7 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Type check (mypy --strict)
-        run: uv run mypy --strict src tests
+        run: uv run mypy --strict src tests scripts
 
       - name: Test (pytest + coverage)
         run: uv run pytest --cov=cross_product_platform --cov-fail-under=90
@@ -49,6 +49,9 @@ jobs:
 
       - name: Injected one-day gap is detected by row_count_anomaly
         run: make anomaly-check
+
+      - name: An unmapped plan code fails the build
+        run: make unmapped-check
 
       - name: BigQuery offline compile (fake service-account key, no connection)
         run: make bq-compile

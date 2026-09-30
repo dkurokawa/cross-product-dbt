@@ -4,11 +4,17 @@ version: 2
 # `external_location`). {{ env_var('PLATFORM_LANDING_ROOT') }} is the lake root written by
 # `platform ingest`. On other warehouses these become ordinary tables loaded by a
 # separate step, so the models below never mention a table function.
+#
+# Freshness: every landed file carries `ingested_at` (added by the landing step).
 
 sources:
   - name: a
     description: "Product A: consumer app events, written with eventlake."
     schema: raw_a
+    loaded_at_field: ingested_at
+    freshness: &freshness
+      warn_after: {count: 24, period: hour}
+      error_after: {count: 72, period: hour}
     tables:
       - name: member_registered
         config:
@@ -30,6 +36,8 @@ sources:
   - name: b
     description: "Product B: reservation SaaS, full snapshots."
     schema: raw_b
+    loaded_at_field: ingested_at
+    freshness: *freshness
     tables:
       - name: customers
         config:
@@ -43,6 +51,8 @@ sources:
   - name: c
     description: "Product C: gym back-office database, CDC log."
     schema: raw_c
+    loaded_at_field: ingested_at
+    freshness: *freshness
     tables:
       - name: members
         config:
@@ -64,6 +74,9 @@ sources:
   - name: d
     description: "Product D: acquired billing package (CSV, decoded to UTF-8 at landing)."
     schema: raw_d
+    # CSV columns are all text; freshness needs a real timestamp.
+    loaded_at_field: cast(ingested_at as timestamptz)
+    freshness: *freshness
     tables:
       - name: invoices
         config:
@@ -77,6 +90,9 @@ sources:
   - name: e
     description: "Product E: corporate-sales sheet exported monthly (column names canonicalized at landing)."
     schema: raw_e
+    # CSV columns are all text; freshness needs a real timestamp.
+    loaded_at_field: cast(ingested_at as timestamptz)
+    freshness: *freshness
     tables:
       - name: accounts
         config:

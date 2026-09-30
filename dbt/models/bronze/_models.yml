@@ -28,6 +28,13 @@ models:
         data_tests: [unique, not_null]
       - name: member_id
         data_tests: [not_null]
+    data_tests:
+      # A one-day hole in the daily series is a broken delivery, not a quiet day.
+      - row_count_anomaly:
+          arguments:
+            date_column: occurred_at
+            window: 28
+            z: 3
 
   - name: brz_a_workout_completed
     description: "A: workouts logged in the app, de-duplicated by event_id."
@@ -36,6 +43,12 @@ models:
         data_tests: [unique, not_null]
       - name: member_id
         data_tests: [not_null]
+    data_tests:
+      - row_count_anomaly:
+          arguments:
+            date_column: occurred_at
+            window: 28
+            z: 3
 
   - name: brz_a_purchase_made
     description: "A: in-app purchases (tax-inclusive), de-duplicated by event_id."
