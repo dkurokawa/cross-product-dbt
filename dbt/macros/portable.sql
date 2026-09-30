@@ -158,7 +158,21 @@
     {%- endif -%}
 {% endmacro %}
 
-{# One row per month between two dates (the end date is exclusive). #}
-{% macro month_spine(start_expr, end_expr) %}
-    {{ dbt_utils.date_spine(datepart='month', start_date=start_expr, end_date=end_expr) }}
+{# One row per month from the first date to the last (both inclusive), as column date_month. #}
+{% macro month_spine(first_month, last_month) %}
+    {{ return(adapter.dispatch('month_spine', 'platform')(first_month, last_month)) }}
+{% endmacro %}
+
+{% macro default__month_spine(first_month, last_month) %}
+    {{ exceptions.raise_compiler_error("month_spine is not implemented for this adapter") }}
+{% endmacro %}
+
+{% macro duckdb__month_spine(first_month, last_month) %}
+    select cast(m.month_start as date) as date_month
+    from generate_series(cast({{ first_month }} as timestamp), cast({{ last_month }} as timestamp), interval 1 month) as m(month_start)
+{% endmacro %}
+
+{% macro bigquery__month_spine(first_month, last_month) %}
+    select date_month
+    from unnest(generate_date_array({{ first_month }}, {{ last_month }}, interval 1 month)) as date_month
 {% endmacro %}

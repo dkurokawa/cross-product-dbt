@@ -6,6 +6,6 @@ select
 from (
     {{ month_spine(
         "(select " ~ month_start('min(period_start)') ~ " from " ~ ref('brz_period') ~ ")",
-        "(select " ~ add_days(month_end_date('max(period_end)'), 1) ~ " from " ~ ref('brz_period') ~ ")"
+        "(select " ~ month_start('max(period_end)') ~ " from " ~ ref('brz_period') ~ ")"
     ) }}
 ) as spine

@@ -117,7 +117,8 @@ def make_env(root: Path) -> Env:
         con.execute(f"create table access.{model} as {cols}")
     con.execute(
         "create table access.acc_privacy_officer__audit_access_log as "
-        "select 'nosy' as principal, 'analyst' as role, 'denied' as outcome, true as touched_sensitive"
+        "select 'nosy' as principal, 'analyst' as role, 'denied' as outcome, "
+        "true as touched_sensitive"
     )
     con.execute("create schema silver")
     con.execute("create table silver.dim_member as select 'raw-secret@example.com' email")
