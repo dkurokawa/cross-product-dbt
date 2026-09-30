@@ -9,7 +9,6 @@ column that reaches silver, gold or access has a valid declaration.
 
 from __future__ import annotations
 
-import csv
 import re
 import unicodedata
 from collections.abc import Sequence
@@ -38,8 +37,7 @@ _ADDRESS_NAME = re.compile(r"address|postal|(^|_)zip($|_)|住所|郵便")
 _EMAIL_VALUE = re.compile(r"^\s*[\w.+-]+@[\w-]+(\.[\w-]+)+\s*$")
 _PHONE_VALUE = re.compile(r"^\+?[\d\-\s()]{10,}$")
 
-SAMPLE_FILES: Final = 3
-SAMPLE_ROWS: Final = 500
+SAMPLE_ROWS: Final = 100
 _SCANNED_SOURCES: Final = {"A", "B", "C", "D", "E"}
 
 
@@ -112,27 +110,37 @@ def load_source_declarations(sources_yml: Path) -> dict[tuple[str, str], dict[st
     return out
 
 
-def _sample(root: Path, pattern: str, kind: str) -> tuple[list[str], dict[str, list[Any]]]:
-    """All column names of a dataset (from every file) and a sample of their values."""
-    files = sorted(root.glob(pattern))
-    names: list[str] = []
-    for path in files:
-        if kind == "parquet":
-            header = pq.read_schema(path).names
-        else:
-            with path.open(encoding="utf-8", newline="") as handle:
-                header = next(csv.reader(handle), [])
-        names += [n for n in header if n not in names]
-    picks = files[:: max(1, len(files) // SAMPLE_FILES)][:SAMPLE_FILES] if files else []
-    values: dict[str, list[Any]] = {n: [] for n in names}
-    for path in picks:
-        if kind == "parquet":
-            frame = pq.read_table(path).to_pandas().head(SAMPLE_ROWS)
-        else:
-            frame = pd.read_csv(path, dtype=str, keep_default_na=False, nrows=SAMPLE_ROWS)
+def _read_head(path: Path, kind: str) -> pd.DataFrame:
+    """The header and the first ``SAMPLE_ROWS`` rows of one file."""
+    if kind == "parquet":
+        batches = pq.ParquetFile(path).iter_batches(batch_size=SAMPLE_ROWS)
+        first = next(batches, None)
+        if first is None:
+            return pd.DataFrame(columns=pq.read_schema(path).names)
+        return pd.DataFrame(first.to_pandas())
+    return pd.read_csv(path, dtype=str, keep_default_na=False, nrows=SAMPLE_ROWS)
+
+
+def _scan_dataset(root: Path, pattern: str, kind: str) -> dict[str, Detection]:
+    """Detect personal data in EVERY file of a dataset (bounded rows per file).
+
+    Each file is judged on its own and the strongest finding per column wins, so a column that
+    holds personal data in a single file is still found.
+    """
+    found: dict[str, Detection] = {}
+    for path in sorted(root.glob(pattern)):
+        frame = _read_head(path, kind)
         for column in frame.columns:
-            values[str(column)] += frame[column].tolist()
-    return names, values
+            name = str(column)
+            values = frame[column].tolist() if len(frame) else []
+            detection = detect(name, values)
+            previous = found.get(name)
+            if previous is None or _RANK[detection.level] > _RANK[previous.level]:
+                found[name] = detection
+            elif _RANK[detection.level] == _RANK[previous.level] and detection.reasons:
+                merged = tuple(dict.fromkeys((*previous.reasons, *detection.reasons)))
+                found[name] = Detection(previous.level, merged)
+    return found
 
 
 def scan_lake(
@@ -145,10 +153,9 @@ def scan_lake(
         if ds.source not in _SCANNED_SOURCES:
             continue
         kind = "parquet" if ds.kind == "parquet" else "csv"
-        names, values = _sample(root, ds.pattern, kind)
+        detections = _scan_dataset(root, ds.pattern, kind)
         declared = declarations.get((ds.source, ds.dataset), {})
-        for column in names:
-            found = detect(column, values[column])
+        for column, found in detections.items():
             given = declared.get(column)
             label = f"{ds.source}.{ds.dataset}.{column}"
             if given is not None and given not in PII_CLASSES:
@@ -161,7 +168,10 @@ def scan_lake(
                     f"{label}: detected {found.level} ({'; '.join(found.reasons)}) but {state}"
                 )
             elif given is not None and _RANK[given] < _RANK[found.level]:
-                warnings.append(f"{label}: declared {given}, detectors suggest {found.level}")
+                problems.append(
+                    f"{label}: declared {given} but detected {found.level} "
+                    f"({'; '.join(found.reasons)})"
+                )
     return problems, warnings
 
 

@@ -280,3 +280,15 @@ def test_audience_products_and_roles_options_are_validated() -> None:
     doc["tables"].append(dict(doc["tables"][0]))
     with pytest.raises(PolicyError, match="twice"):
         parse_policy(doc)
+
+
+def test_the_sales_owner_is_an_employee_name_and_is_masked_for_restricted_roles(
+    files: dict[str, str],
+) -> None:
+    """sales_owner holds person surnames: analyst and product_e get only the initial."""
+    allow = json.loads(files["policies/gateway_allowlist.json"])
+    for role in ("analyst", "product_e"):
+        columns = allow["roles"][role]["tables"]["dim_account"]["columns"]
+        assert "sales_owner_initial" in columns and "sales_owner" not in columns, role
+    officer = allow["roles"]["privacy_officer"]["tables"]["dim_account"]["columns"]
+    assert "sales_owner" in officer

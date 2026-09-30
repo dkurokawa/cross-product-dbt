@@ -3,7 +3,7 @@ select
     account_key,
     company_name,
     {{ mask_initial('contact_name') }} as contact_name_initial,
-    sales_owner,
+    {{ mask_initial('sales_owner') }} as sales_owner_initial,
     seats,
     monthly_fee_yen,
     first_month,

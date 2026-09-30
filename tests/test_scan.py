@@ -94,11 +94,35 @@ def test_scan_fails_on_undeclared_free_text_and_invalid_class(tmp_path: Path) ->
     assert any("remarks" in p and "free text" in p for p in problems)
 
 
-def test_scan_warns_but_passes_when_declared_weaker_than_detected(tmp_path: Path) -> None:
+def test_scan_fails_when_declared_weaker_than_detected(tmp_path: Path) -> None:
     _mini_lake(tmp_path)
     problems, warnings = scan_lake(tmp_path, {("A", "member_registered"): {"email": "quasi"}})
-    assert problems == []
-    assert "declared quasi, detectors suggest direct" in warnings[0]
+    assert len(problems) == 1
+    assert "declared quasi but detected direct" in problems[0]
+    assert warnings == []
+
+
+def test_scan_sees_pii_that_is_only_in_one_of_many_files(tmp_path: Path) -> None:
+    """Every landed file is scanned; a leak in file 2 of 10 must not slip through a sample."""
+    directory = tmp_path / "A" / "member_registered"
+    for i in range(10):
+        target = directory / f"dt=2026-01-{i + 1:02d}"
+        target.mkdir(parents=True)
+        data: dict[str, list[str]] = {"event_id": ["e"]}
+        if i == 1:
+            data["mobile_number"] = ["090-1234-5678"]
+        pd.DataFrame(data).to_parquet(target / "part-1.parquet", index=False)
+    problems, _ = scan_lake(tmp_path, {("A", "member_registered"): {}})
+    assert len(problems) == 1 and "mobile_number" in problems[0]
+
+    csv_dir = tmp_path / "E" / "accounts"
+    for i in range(10):
+        target = csv_dir / f"month=2026-{i + 1:02d}"
+        target.mkdir(parents=True)
+        note = "Recovering from a wrist fracture and no push-ups." if i == 1 else "x"
+        (target / "a.csv").write_text(f"company_name,remarks\nAcme,{note}\n", encoding="utf-8")
+    problems, _ = scan_lake(tmp_path, {("E", "accounts"): {}})
+    assert any("remarks" in p and "free text" in p for p in problems)
 
 
 def test_scan_reads_csv_headers_and_values(tmp_path: Path) -> None:

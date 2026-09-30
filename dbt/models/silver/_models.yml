@@ -203,8 +203,9 @@ models:
   - name: sales_owner
     config:
       meta:
-        pii: quasi
-    description: Salesperson responsible for the account.
+        pii: direct
+        mask: initial
+    description: 'Salesperson responsible for the account (an employee name: direct personal data).'
   - name: seats
     config:
       meta:

@@ -136,8 +136,8 @@ models:
         config:
           meta:
             pii: quasi
-      - name: sales_owner
-        description: "Salesperson responsible for the account."
+      - name: sales_owner_initial
+        description: "Masked: only the first character of the original column. Salesperson responsible for the account (an employee name: direct personal data)."
         config:
           meta:
             pii: quasi
@@ -3409,8 +3409,8 @@ models:
         config:
           meta:
             pii: quasi
-      - name: sales_owner
-        description: "Salesperson responsible for the account."
+      - name: sales_owner_initial
+        description: "Masked: only the first character of the original column. Salesperson responsible for the account (an employee name: direct personal data)."
         config:
           meta:
             pii: quasi
@@ -4083,10 +4083,10 @@ models:
           meta:
             pii: direct
       - name: sales_owner
-        description: "Salesperson responsible for the account."
+        description: "Salesperson responsible for the account (an employee name: direct personal data)."
         config:
           meta:
-            pii: quasi
+            pii: direct
       - name: seats
         description: "Seats under contract as typed in the sales sheet; empty if the cell held a placeholder."
         config:

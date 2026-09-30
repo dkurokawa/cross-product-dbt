@@ -692,7 +692,8 @@ sources:
           - name: sales_owner
             config:
               meta:
-                pii: quasi
+                pii: direct
+                mask: initial
           - name: account_key
             config:
               meta:
