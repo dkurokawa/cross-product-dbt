@@ -1165,3 +1165,19 @@ models:
         combination_of_columns:
         - product
         - household_key
+- name: dim_month
+  description: One row per month of the period the platform covers, from a real month spine.
+  columns:
+  - name: period_month
+    description: First day of the month.
+    config:
+      meta:
+        pii: none
+    data_tests:
+    - unique
+    - not_null
+  - name: month_end
+    description: Last day of the month.
+    config:
+      meta:
+        pii: none

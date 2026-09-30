@@ -2,10 +2,10 @@
 with
 months as (
 
-    select distinct
-        {{ month_start('activity_date_jst') }} as period_month,
-        {{ month_end_date('activity_date_jst') }} as month_end
-    from {{ ref('fct_activity') }}
+    select
+        period_month,
+        month_end
+    from {{ ref('dim_month') }}
 
 ),
 
@@ -72,15 +72,52 @@ scoped as (
         on f.entity = p.member_key
     where p.product = 'D'
 
+),
+
+counted as (
+
+    select
+        m.period_month,
+        s.product,
+        count(distinct s.entity) as n
+    from months as m
+    inner join scoped as s
+        on
+            {{ add_days('m.month_end', -30) }} < s.event_date
+            and m.month_end >= s.event_date
+    group by m.period_month, s.product
+
+),
+
+products as (
+
+    select 'ALL' as product
+
+    union all
+
+    select 'A' as product
+
+    union all
+
+    select 'B' as product
+
+    union all
+
+    select 'C' as product
+
+    union all
+
+    select 'D' as product
+
 )
 
 select
     m.period_month,
-    s.product,
-    count(distinct s.entity) as active_members
+    p.product,
+    coalesce(c.n, 0) as active_members
 from months as m
-inner join scoped as s
+cross join products as p
+left join counted as c
     on
-        {{ add_days('m.month_end', -30) }} < s.event_date
-        and m.month_end >= s.event_date
-group by m.period_month, s.product
+        m.period_month = c.period_month
+        and p.product = c.product

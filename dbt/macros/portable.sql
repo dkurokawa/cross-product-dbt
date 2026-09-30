@@ -157,3 +157,8 @@
         )
     {%- endif -%}
 {% endmacro %}
+
+{# One row per month between two dates (the end date is exclusive). #}
+{% macro month_spine(start_expr, end_expr) %}
+    {{ dbt_utils.date_spine(datepart='month', start_date=start_expr, end_date=end_expr) }}
+{% endmacro %}

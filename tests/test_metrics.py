@@ -198,3 +198,21 @@ def test_cli_generate_and_check(tmp_path: Path, capsys: pytest.CaptureFixture[st
     manifest.write_text("[]")
     with pytest.raises(ValueError, match="not a JSON object"):
         load_json(manifest)
+
+
+def test_generated_metrics_use_the_month_spine_and_emit_every_scope_with_zero(
+    spec: MetricsSpec,
+) -> None:
+    """A month or scope with no activity must still have a row (0), from dim_month."""
+    files = generate_files(spec)
+    for metric in spec.metrics:
+        sql = files[f"dbt/models/gold/metrics/metric_{metric.name}.sql"]
+        assert "ref('dim_month')" in sql, metric.name
+        assert "cross join products as p" in sql and "coalesce(" in sql, metric.name
+        assert "select distinct\n        {{ month_start" not in sql  # not months seen in the facts
+        yml = files[f"dbt/models/gold/metrics/metric_{metric.name}.yml"]
+        assert "metric_covers_period_and_scopes" in yml
+    active = files["dbt/models/gold/metrics/metric_active_members.yml"]
+    assert "products: [ALL, A, B, C, D]" in active
+    revenue = files["dbt/models/gold/metrics/metric_net_revenue.yml"]
+    assert "products: [ALL, A, D]" in revenue

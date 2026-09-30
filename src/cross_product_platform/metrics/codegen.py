@@ -70,10 +70,10 @@ def _window_ctes(active: Metric) -> str:
         """
 months as (
 
-    select distinct
-        {{ month_start('@DATE@') }} as period_month,
-        {{ month_end_date('@DATE@') }} as month_end
-    from {{ ref('@MODEL@') }}
+    select
+        period_month,
+        month_end
+    from {{ ref('dim_month') }}
 
 ),
 
@@ -107,18 +107,40 @@ def _window_join(active: Metric, base: str = "    ") -> str:
     )
 
 
+def _products_cte(spec: MetricsSpec, metric: Metric) -> str:
+    """The product scopes of a metric as a one-column relation."""
+    rows = "\n\n    union all\n\n".join(
+        f"    select '{product}' as product" for product in spec.scopes_of(metric)
+    )
+    return f"products as (\n\n{rows}\n\n)"
+
+
+def _grid_select(name: str, value: str, source_cte: str) -> str:
+    """One row per (month, product scope), the value from ``source_cte`` or 0 when absent."""
+    return (
+        f"select\n    m.period_month,\n    p.product,\n    {value} as {name}\n"
+        "from months as m\ncross join products as p\n"
+        f"left join {source_cte} as c\n"
+        "    on\n        m.period_month = c.period_month\n        and p.product = c.product"
+    )
+
+
 def _metric_sql(spec: MetricsSpec, metric: Metric) -> str:
     active = _active(spec, metric)
+    products = _products_cte(spec, metric)
     if metric.kind == "distinct_entities_in_window":
         body = (
             "with\n"
             + _window_ctes(metric)
             + ",\n\n"
             + _scoped_cte(spec, metric, metric)
-            + f"\n\nselect\n    m.period_month,\n    s.product,\n"
-            f"    count(distinct s.entity) as {metric.name}\n"
-            f"from months as m\n{_window_join(metric, '')}\n"
-            "group by m.period_month, s.product"
+            + ",\n\ncounted as (\n\n    select\n        m.period_month,\n        s.product,\n"
+            "        count(distinct s.entity) as n\n    from months as m\n"
+            + _window_join(metric)
+            + "\n    group by m.period_month, s.product\n\n),\n\n"
+            + products
+            + "\n\n"
+            + _grid_select(metric.name, "coalesce(c.n, 0)", "counted")
         )
     elif metric.kind == "sum_by_month":
         d = metric.definition
@@ -135,7 +157,14 @@ def _metric_sql(spec: MetricsSpec, metric: Metric) -> str:
             )
         body = _fill(
             """
-with dated as (
+with months as (
+
+    select period_month
+    from {{ ref('dim_month') }}
+
+),
+
+dated as (
 
     select
         source,
@@ -149,19 +178,28 @@ scoped as (
 
 @PARTS@
 
-)
+),
 
-select
-    period_month,
-    product,
-    {{ to_bigint('sum(amount)') }} as @NAME@
-from scoped
-group by period_month, product""",
+counted as (
+
+    select
+        period_month,
+        product,
+        {{ to_bigint('sum(amount)') }} as total
+    from scoped
+    group by period_month, product
+
+),
+
+@PRODUCTS@
+
+@GRID@""",
             TS=d["timestamp_column"],
             AMOUNT=d["amount_column"],
             MODEL=d["model"],
             PARTS="\n\n    union all\n\n".join(parts),
-            NAME=metric.name,
+            PRODUCTS=products,
+            GRID=_grid_select(metric.name, "coalesce(c.total, 0)", "counted"),
         )
     elif metric.kind == "lapsed_between_windows":
         body = (
@@ -172,17 +210,21 @@ group by period_month, product""",
             + ",\n\nactive_sets as (\n\n    select distinct\n        m.period_month,\n"
             "        s.product,\n        s.entity\n    from months as m\n"
             + _window_join(active)
-            + "\n\n)\n\n"
-            + f"select\n    m.period_month,\n    prev.product,\n    count(*) as {metric.name}\n"
-            "from months as m\ninner join active_sets as prev\n"
-            "    on prev.period_month = {{ month_start(add_days('m.period_month', -1)) }}\n"
-            "left join active_sets as cur\n"
-            "    on\n"
-            "        m.period_month = cur.period_month\n"
-            "        and prev.product = cur.product\n"
-            "        and prev.entity = cur.entity\n"
-            "where cur.entity is null\n"
-            "group by m.period_month, prev.product"
+            + "\n\n),\n\ncounted as (\n\n    select\n        m.period_month,\n"
+            "        prev.product,\n        count(*) as n\n    from months as m\n"
+            "    inner join active_sets as prev\n"
+            "        on prev.period_month = "
+            "{{ month_start(add_days('m.period_month', -1)) }}\n"
+            "    left join active_sets as cur\n"
+            "        on\n"
+            "            m.period_month = cur.period_month\n"
+            "            and prev.product = cur.product\n"
+            "            and prev.entity = cur.entity\n"
+            "    where cur.entity is null\n"
+            "    group by m.period_month, prev.product\n\n),\n\n"
+            + products
+            + "\n\n"
+            + _grid_select(metric.name, "coalesce(c.n, 0)", "counted")
         )
     else:  # rows_per_active
         body = (
@@ -193,15 +235,16 @@ group by period_month, product""",
             + ",\n\nwindow_rows as (\n\n    select\n        m.period_month,\n"
             "        s.product,\n        count(*) as n_rows\n    from months as m\n"
             + _window_join(active)
-            + "\n    group by m.period_month, s.product\n\n)\n\n"
-            + f"select\n    w.period_month,\n    w.product,\n"
-            f"    {{{{ to_numeric('1.0 * w.n_rows / nullif(a.{active.name}, 0)') }}}} "
-            f"as {metric.name}\n"
-            "from window_rows as w\n"
-            f"inner join {{{{ ref('metric_{active.name}') }}}} as a\n"
-            "    on\n"
-            "        w.period_month = a.period_month\n"
-            "        and w.product = a.product"
+            + "\n    group by m.period_month, s.product\n\n),\n\nratios as (\n\n"
+            "    select\n        w.period_month,\n        w.product,\n"
+            f"        1.0 * w.n_rows / nullif(a.{active.name}, 0) as ratio\n"
+            "    from window_rows as w\n"
+            f"    inner join {{{{ ref('metric_{active.name}') }}}} as a\n"
+            "        on\n            w.period_month = a.period_month\n"
+            "            and w.product = a.product\n\n),\n\n"
+            + products
+            + "\n\n"
+            + _grid_select(metric.name, "{{ to_numeric('coalesce(c.ratio, 0)') }}", "ratios")
         )
     return _sql(body)
 
@@ -251,7 +294,7 @@ RECON_DESCRIPTIONS: Final = {
 }
 
 
-def _metric_yml(metric: Metric) -> str:
+def _metric_yml(spec: MetricsSpec, metric: Metric) -> str:
     nn = "        data_tests: [not_null]\n"
     described = metric_descriptions(metric)
     cols = "".join(_column(n, t, described[n], nn) for n, t in metric_columns(metric))
@@ -260,6 +303,9 @@ def _metric_yml(metric: Metric) -> str:
         f"    description: {_yaml_str(metric.description)}\n" + _CONFIG + f"    columns:\n{cols}"
         "    data_tests:\n      - dbt_utils.unique_combination_of_columns:\n"
         "          arguments:\n            combination_of_columns: [period_month, product]\n"
+        "      # one row for every month of the period and every scope, 0 where nothing happened\n"
+        "      - metric_covers_period_and_scopes:\n"
+        f"          arguments:\n            products: [{', '.join(spec.scopes_of(metric))}]\n"
     )
 
 
@@ -479,7 +525,7 @@ def generate_files(spec: MetricsSpec) -> dict[str, str]:
     files: dict[str, str] = {}
     for metric in spec.metrics:
         files[f"{METRICS_DIR}/metric_{metric.name}.sql"] = _metric_sql(spec, metric)
-        files[f"{METRICS_DIR}/metric_{metric.name}.yml"] = _metric_yml(metric)
+        files[f"{METRICS_DIR}/metric_{metric.name}.yml"] = _metric_yml(spec, metric)
         files[f"{RECON_DIR}/recon_{metric.name}.sql"] = _recon_sql(metric)
         files[f"{RECON_DIR}/recon_{metric.name}.yml"] = _recon_yml(metric)
     files[DOCS_PATH] = _docs(spec)

@@ -2,10 +2,10 @@
 with
 months as (
 
-    select distinct
-        {{ month_start('activity_date_jst') }} as period_month,
-        {{ month_end_date('activity_date_jst') }} as month_end
-    from {{ ref('fct_activity') }}
+    select
+        period_month,
+        month_end
+    from {{ ref('dim_month') }}
 
 ),
 
@@ -86,19 +86,56 @@ active_sets as (
             {{ add_days('m.month_end', -30) }} < s.event_date
             and m.month_end >= s.event_date
 
+),
+
+counted as (
+
+    select
+        m.period_month,
+        prev.product,
+        count(*) as n
+    from months as m
+    inner join active_sets as prev
+        on prev.period_month = {{ month_start(add_days('m.period_month', -1)) }}
+    left join active_sets as cur
+        on
+            m.period_month = cur.period_month
+            and prev.product = cur.product
+            and prev.entity = cur.entity
+    where cur.entity is null
+    group by m.period_month, prev.product
+
+),
+
+products as (
+
+    select 'ALL' as product
+
+    union all
+
+    select 'A' as product
+
+    union all
+
+    select 'B' as product
+
+    union all
+
+    select 'C' as product
+
+    union all
+
+    select 'D' as product
+
 )
 
 select
     m.period_month,
-    prev.product,
-    count(*) as churned_members
+    p.product,
+    coalesce(c.n, 0) as churned_members
 from months as m
-inner join active_sets as prev
-    on prev.period_month = {{ month_start(add_days('m.period_month', -1)) }}
-left join active_sets as cur
+cross join products as p
+left join counted as c
     on
-        m.period_month = cur.period_month
-        and prev.product = cur.product
-        and prev.entity = cur.entity
-where cur.entity is null
-group by m.period_month, prev.product
+        m.period_month = c.period_month
+        and p.product = c.product

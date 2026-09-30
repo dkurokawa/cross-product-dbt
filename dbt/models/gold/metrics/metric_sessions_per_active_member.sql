@@ -2,10 +2,10 @@
 with
 months as (
 
-    select distinct
-        {{ month_start('activity_date_jst') }} as period_month,
-        {{ month_end_date('activity_date_jst') }} as month_end
-    from {{ ref('fct_activity') }}
+    select
+        period_month,
+        month_end
+    from {{ ref('dim_month') }}
 
 ),
 
@@ -87,14 +87,51 @@ window_rows as (
             and m.month_end >= s.event_date
     group by m.period_month, s.product
 
+),
+
+ratios as (
+
+    select
+        w.period_month,
+        w.product,
+        1.0 * w.n_rows / nullif(a.active_members, 0) as ratio
+    from window_rows as w
+    inner join {{ ref('metric_active_members') }} as a
+        on
+            w.period_month = a.period_month
+            and w.product = a.product
+
+),
+
+products as (
+
+    select 'ALL' as product
+
+    union all
+
+    select 'A' as product
+
+    union all
+
+    select 'B' as product
+
+    union all
+
+    select 'C' as product
+
+    union all
+
+    select 'D' as product
+
 )
 
 select
-    w.period_month,
-    w.product,
-    {{ to_numeric('1.0 * w.n_rows / nullif(a.active_members, 0)') }} as sessions_per_active_member
-from window_rows as w
-inner join {{ ref('metric_active_members') }} as a
+    m.period_month,
+    p.product,
+    {{ to_numeric('coalesce(c.ratio, 0)') }} as sessions_per_active_member
+from months as m
+cross join products as p
+left join ratios as c
     on
-        w.period_month = a.period_month
-        and w.product = a.product
+        m.period_month = c.period_month
+        and p.product = c.product

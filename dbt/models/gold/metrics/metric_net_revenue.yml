@@ -35,3 +35,7 @@ models:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns: [period_month, product]
+      # one row for every month of the period and every scope, 0 where nothing happened
+      - metric_covers_period_and_scopes:
+          arguments:
+            products: [ALL, A, D]
