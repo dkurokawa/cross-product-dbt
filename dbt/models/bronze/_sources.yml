@@ -20,19 +20,177 @@ sources:
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/member_registered/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+        columns:
+          - name: event_id
+            config:
+              meta:
+                pii: none
+          - name: occurred_at
+            config:
+              meta:
+                pii: none
+          - name: recorded_at
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: email
+            config:
+              meta:
+                pii: direct
+                mask: email_domain
+          - name: name
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: name_kana
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: phone
+            config:
+              meta:
+                pii: direct
+                mask: phone_last4
+          - name: birth_date
+            config:
+              meta:
+                pii: direct
+                mask: birth_year
+          - name: guardian_member_id
+            config:
+              meta:
+                pii: quasi
+          - name: guardian_email
+            config:
+              meta:
+                pii: direct
+                mask: email_domain
+          - name: health_notes
+            config:
+              meta:
+                pii: sensitive
+          - name: member_key
+            config:
+              meta:
+                pii: quasi
+          - name: link_key
+            config:
+              meta:
+                pii: quasi
+          - name: key_method
+            config:
+              meta:
+                pii: none
+          - name: household_key
+            config:
+              meta:
+                pii: quasi
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: app_opened
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/app_opened/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+        columns:
+          - name: event_id
+            config:
+              meta:
+                pii: none
+          - name: occurred_at
+            config:
+              meta:
+                pii: none
+          - name: recorded_at
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: workout_completed
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/workout_completed/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+        columns:
+          - name: event_id
+            config:
+              meta:
+                pii: none
+          - name: occurred_at
+            config:
+              meta:
+                pii: none
+          - name: recorded_at
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: workout_type
+            config:
+              meta:
+                pii: none
+          - name: duration_min
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: purchase_made
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/purchase_made/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
 
+        columns:
+          - name: event_id
+            config:
+              meta:
+                pii: none
+          - name: occurred_at
+            config:
+              meta:
+                pii: none
+          - name: recorded_at
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: sku
+            config:
+              meta:
+                pii: none
+          - name: amount_tax_incl
+            config:
+              meta:
+                pii: none
+          - name: tax_rate
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
   - name: b
     description: "Product B: reservation SaaS, full snapshots."
     schema: raw_b
@@ -43,11 +201,113 @@ sources:
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/B/customers/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+        columns:
+          - name: tenant_id
+            config:
+              meta:
+                pii: none
+          - name: member_no
+            config:
+              meta:
+                pii: quasi
+          - name: name
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: name_kana
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: email
+            config:
+              meta:
+                pii: direct
+                mask: email_domain
+          - name: phone
+            config:
+              meta:
+                pii: direct
+                mask: phone_last4
+          - name: created_at
+            config:
+              meta:
+                pii: none
+          - name: is_deleted
+            config:
+              meta:
+                pii: none
+          - name: deleted_at
+            config:
+              meta:
+                pii: none
+          - name: member_key
+            config:
+              meta:
+                pii: quasi
+          - name: link_key
+            config:
+              meta:
+                pii: quasi
+          - name: key_method
+            config:
+              meta:
+                pii: none
+          - name: household_key
+            config:
+              meta:
+                pii: quasi
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: bookings
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/B/bookings/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
 
+        columns:
+          - name: tenant_id
+            config:
+              meta:
+                pii: none
+          - name: member_no
+            config:
+              meta:
+                pii: quasi
+          - name: class_start_at
+            config:
+              meta:
+                pii: none
+          - name: created_at
+            config:
+              meta:
+                pii: none
+          - name: price_ex_tax
+            config:
+              meta:
+                pii: none
+          - name: booking_no
+            config:
+              meta:
+                pii: none
+          - name: tax_rate
+            config:
+              meta:
+                pii: none
+          - name: status
+            config:
+              meta:
+                pii: none
+          - name: is_deleted
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
   - name: c
     description: "Product C: gym back-office database, CDC log."
     schema: raw_c
@@ -58,19 +318,241 @@ sources:
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/members/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+        columns:
+          - name: op
+            config:
+              meta:
+                pii: none
+          - name: changed_at
+            config:
+              meta:
+                pii: none
+          - name: lsn
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: name
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: name_kana
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: email
+            config:
+              meta:
+                pii: direct
+                mask: email_domain
+          - name: phone
+            config:
+              meta:
+                pii: direct
+                mask: phone_last4
+          - name: birth_date
+            config:
+              meta:
+                pii: direct
+                mask: birth_year
+          - name: guardian_email
+            config:
+              meta:
+                pii: direct
+                mask: email_domain
+          - name: medical_conditions
+            config:
+              meta:
+                pii: sensitive
+          - name: facility_id
+            config:
+              meta:
+                pii: none
+          - name: status
+            config:
+              meta:
+                pii: none
+          - name: joined_on
+            config:
+              meta:
+                pii: none
+          - name: member_key
+            config:
+              meta:
+                pii: quasi
+          - name: link_key
+            config:
+              meta:
+                pii: quasi
+          - name: key_method
+            config:
+              meta:
+                pii: none
+          - name: household_key
+            config:
+              meta:
+                pii: quasi
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: contracts_fy2025
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/contracts_fy2025/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+        columns:
+          - name: op
+            config:
+              meta:
+                pii: none
+          - name: changed_at
+            config:
+              meta:
+                pii: none
+          - name: lsn
+            config:
+              meta:
+                pii: none
+          - name: contract_id
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: plan_cd
+            config:
+              meta:
+                pii: none
+          - name: monthly_fee
+            config:
+              meta:
+                pii: none
+          - name: start_dt
+            config:
+              meta:
+                pii: none
+          - name: end_dt
+            config:
+              meta:
+                pii: none
+          - name: family_group_id
+            config:
+              meta:
+                pii: quasi
+          - name: status
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: contracts_fy2026
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/contracts_fy2026/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+        columns:
+          - name: op
+            config:
+              meta:
+                pii: none
+          - name: changed_at
+            config:
+              meta:
+                pii: none
+          - name: lsn
+            config:
+              meta:
+                pii: none
+          - name: contract_id
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: plan_id
+            config:
+              meta:
+                pii: none
+          - name: price_ex_tax
+            config:
+              meta:
+                pii: none
+          - name: tax_rate
+            config:
+              meta:
+                pii: none
+          - name: effective_from
+            config:
+              meta:
+                pii: none
+          - name: effective_to
+            config:
+              meta:
+                pii: none
+          - name: payer_member_id
+            config:
+              meta:
+                pii: quasi
+          - name: billing_cycle
+            config:
+              meta:
+                pii: none
+          - name: status
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: visits
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/visits/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
 
+        columns:
+          - name: op
+            config:
+              meta:
+                pii: none
+          - name: visit_id
+            config:
+              meta:
+                pii: none
+          - name: lsn
+            config:
+              meta:
+                pii: none
+          - name: member_id
+            config:
+              meta:
+                pii: quasi
+          - name: checked_in_at
+            config:
+              meta:
+                pii: none
+          - name: facility_id
+            config:
+              meta:
+                pii: none
+          - name: changed_at
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
   - name: d
     description: "Product D: acquired billing package (CSV, decoded to UTF-8 at landing)."
     schema: raw_d
@@ -82,11 +564,97 @@ sources:
         config:
           meta:
             external_location: "read_csv('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/D/invoices/dt=*/*.csv', header=true, all_varchar=true, hive_partitioning=true)"
+        columns:
+          - name: "請求番号"
+            config:
+              meta:
+                pii: none
+          - name: "請求日"
+            config:
+              meta:
+                pii: none
+          - name: "氏名"
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: "氏名カナ"
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: "電話番号"
+            config:
+              meta:
+                pii: direct
+                mask: phone_last4
+          - name: "生年月日"
+            config:
+              meta:
+                pii: direct
+                mask: birth_year
+          - name: "プランコード"
+            config:
+              meta:
+                pii: none
+          - name: "請求金額（税抜）"
+            config:
+              meta:
+                pii: none
+          - name: "消費税率"
+            config:
+              meta:
+                pii: none
+          - name: "入金状況"
+            config:
+              meta:
+                pii: none
+          - name: member_key
+            config:
+              meta:
+                pii: quasi
+          - name: link_key
+            config:
+              meta:
+                pii: quasi
+          - name: key_method
+            config:
+              meta:
+                pii: none
+          - name: household_key
+            config:
+              meta:
+                pii: quasi
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
       - name: refunds
         config:
           meta:
             external_location: "read_csv('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/D/refunds/dt=*/*.csv', header=true, all_varchar=true, hive_partitioning=true)"
 
+        columns:
+          - name: "返金番号"
+            config:
+              meta:
+                pii: none
+          - name: "元請求番号"
+            config:
+              meta:
+                pii: none
+          - name: "返金日"
+            config:
+              meta:
+                pii: none
+          - name: "返金額（税抜）"
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
   - name: e
     description: "Product E: corporate-sales sheet exported monthly (column names canonicalized at landing)."
     schema: raw_e
@@ -99,6 +667,40 @@ sources:
           meta:
             external_location: "read_csv('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/E/accounts/month=*/*.csv', header=true, all_varchar=true, hive_partitioning=true, hive_types_autocast=false)"
 
+        columns:
+          - name: company_name
+            config:
+              meta:
+                pii: none
+          - name: contact_name
+            config:
+              meta:
+                pii: direct
+                mask: initial
+          - name: seats
+            config:
+              meta:
+                pii: none
+          - name: monthly_fee_yen
+            config:
+              meta:
+                pii: none
+          - name: contract_status
+            config:
+              meta:
+                pii: none
+          - name: sales_owner
+            config:
+              meta:
+                pii: quasi
+          - name: account_key
+            config:
+              meta:
+                pii: none
+          - name: ingested_at
+            config:
+              meta:
+                pii: none
   - name: meta
     description: "Tables the landing step writes about itself and about the products' own KPIs."
     schema: raw_meta

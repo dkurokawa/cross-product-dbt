@@ -38,6 +38,10 @@ to_numeric = {% macro to_numeric(expr) %}cast({{ expr }} as numeric){% endmacro 
 month_start = {% macro month_start(expr) %}cast(date_trunc('month', {{ expr }}) as date){% endmacro %}
 month_end_date = {% macro month_end_date(expr) %}cast(date_trunc('month', {{ expr }}) as date){% endmacro %}
 add_days = {% macro add_days(expr, n) %}cast({{ expr }} as date){% endmacro %}
+mask_email_domain = {% macro mask_email_domain(expr) %}split_part({{ expr }}, '@', 2){% endmacro %}
+mask_phone_last4 = {% macro mask_phone_last4(expr) %}right({{ expr }}, 4){% endmacro %}
+mask_birth_year = {% macro mask_birth_year(expr) %}cast(extract(year from {{ expr }}) as bigint){% endmacro %}
+mask_initial = {% macro mask_initial(expr) %}left({{ expr }}, 1) || '***'{% endmacro %}
 row_hash = {% macro row_hash(columns) %}md5(concat({{ columns | join(', ') }})){% endmacro %}
 
 # `source`, `name`, `value`, `file`, `partition_date`... are ordinary column names in every

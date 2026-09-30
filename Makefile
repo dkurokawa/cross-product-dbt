@@ -36,13 +36,17 @@ freshness:
 docs:
 	$(DBT) docs generate $(DBT_ARGS)
 
-# Guards: generated files up to date, no hand-written metric-named columns, every reported
-# KPI is a known variant.
+# Guards: generated files (metrics, access layer, gateway allowlist) up to date; no hand-written
+# metric-named columns; every reported KPI is a known variant; every column declared for PII and
+# nothing personal detected in the landed data that is declared none / undeclared.
 checks:
 	uv run platform metrics check --root $(LAKE)
+	uv run platform access check --manifest dbt/target/manifest.json
+	uv run platform scan --root $(LAKE)
 
 generate:
 	uv run platform metrics generate
+	uv run platform access generate
 
 test:
 	uv run pytest --cov=cross_product_platform --cov-fail-under=90

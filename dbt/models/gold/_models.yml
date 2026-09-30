@@ -1,33 +1,80 @@
 version: 2
-
 models:
-  - name: identity_quality
-    description: >
-      Members per identification method and source, including the unmatched (source_local)
-      and the number of ambiguous phone+kana links.
-    columns:
-      - name: source
-        data_tests: [not_null]
-      - name: category
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: [email, phone, phone_kana, source_local, ambiguous_link]
-      - name: n
-        data_tests: [not_null]
+- name: identity_quality
+  description: 'Members per identification method and source, including the unmatched (source_local) and
+    the number of ambiguous phone+kana links.
 
-  - name: ingest_quality_daily
-    description: >
-      Files accepted and quarantined per source, dataset and delivery partition (a day, or a
-      month for E). Quarantined files are never silently dropped: they are counted here.
-    columns:
-      - name: source
-        data_tests: [not_null]
-      - name: dataset
-        data_tests: [not_null]
-      - name: partition_date
-        data_tests: [not_null]
+    '
+  columns:
+  - name: source
     data_tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: [source, dataset, partition_date]
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: category
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - email
+          - phone
+          - phone_kana
+          - source_local
+          - ambiguous_link
+    config:
+      meta:
+        pii: none
+  - name: n
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: none
+- name: ingest_quality_daily
+  description: 'Files accepted and quarantined per source, dataset and delivery partition (a day, or a
+    month for E). Quarantined files are never silently dropped: they are counted here.
+
+    '
+  columns:
+  - name: source
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: dataset
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: partition_date
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: files_landed
+    config:
+      meta:
+        pii: none
+  - name: rows_landed
+    config:
+      meta:
+        pii: none
+  - name: files_quarantined
+    config:
+      meta:
+        pii: none
+  - name: violations
+    config:
+      meta:
+        pii: none
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - source
+        - dataset
+        - partition_date

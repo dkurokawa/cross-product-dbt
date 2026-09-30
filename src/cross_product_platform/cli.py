@@ -9,6 +9,15 @@ from datetime import date
 from pathlib import Path
 
 from . import __version__
+from .access import (
+    PolicyError,
+    check_access_files,
+    check_access_manifest,
+    generate_access_files,
+    load_columns,
+    load_policy,
+    write_access_files,
+)
 from .config import GeneratorConfig
 from .dialect_lint import scan_directory
 from .identity import MissingSaltError
@@ -22,6 +31,7 @@ from .metrics.check import (
 )
 from .metrics.codegen import generate_files
 from .metrics.spec import SpecError, load_spec
+from .scan import check_model_declarations, load_source_declarations, scan_lake
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -69,6 +79,23 @@ def build_parser() -> argparse.ArgumentParser:
             p.add_argument("--catalog", type=Path, default=Path("dbt/target/catalog.json"))
             p.add_argument("--root", type=Path, default=None, help="lake root (for check 3)")
             p.add_argument("--only-generated", action="store_true", help="skip checks 2 and 3")
+
+    scan = sub.add_parser("scan", help="find personal data that is undeclared or declared 'none'")
+    scan.add_argument("--root", type=Path, required=True, help="lake root")
+    scan.add_argument("--sources", type=Path, default=Path("dbt/models/bronze/_sources.yml"))
+    scan.add_argument("--manifest", type=Path, default=Path("dbt/target/manifest.json"))
+    scan.add_argument("--catalog", type=Path, default=Path("dbt/target/catalog.json"))
+    scan.add_argument("--skip-models", action="store_true", help="only scan the landed data")
+
+    access = sub.add_parser("access", help="generate / check the access layer from access.yml")
+    asub = access.add_subparsers(dest="access_command", required=True)
+    for name in ("generate", "check"):
+        p = asub.add_parser(name)
+        p.add_argument("--policy", type=Path, default=Path("policies/access.yml"))
+        p.add_argument("--spec", type=Path, default=Path("metrics/metrics.yml"))
+        p.add_argument("--repo-root", type=Path, default=Path("."))
+        if name == "check":
+            p.add_argument("--manifest", type=Path, default=None, help="also check dbt's manifest")
 
     lint = sub.add_parser("lint-dialect", help="grep dbt models for warehouse-specific functions")
     lint.add_argument("models_dir", type=Path, nargs="?", default=Path("dbt/models"))
@@ -132,11 +159,53 @@ def _metrics(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def _access(args: argparse.Namespace) -> int:
+    try:
+        policy = load_policy(args.policy)
+        files = generate_access_files(policy, load_columns(args.repo_root, load_spec(args.spec)))
+    except (PolicyError, SpecError, OSError) as err:
+        print(f"access: {err}", file=sys.stderr)
+        return 2
+    if args.access_command == "generate":
+        write_access_files(files, args.repo_root)
+        print(f"access generate: {len(files)} files written")
+        return 0
+    problems = check_access_files(files, args.repo_root)
+    if args.manifest is not None:
+        problems += check_access_manifest(policy, load_json(args.manifest))
+    for problem in problems:
+        print(f"access check: {problem}", file=sys.stderr)
+    print(f"access check: {len(problems)} problem(s)")
+    return 1 if problems else 0
+
+
+def _scan(args: argparse.Namespace) -> int:
+    problems, warnings = scan_lake(args.root, load_source_declarations(args.sources))
+    if not args.skip_models:
+        try:
+            manifest = load_json(args.manifest)
+            catalog = load_json(args.catalog) if args.catalog.exists() else None
+        except (OSError, ValueError) as err:
+            print(f"scan: cannot read dbt artifacts: {err}", file=sys.stderr)
+            return 2
+        problems += check_model_declarations(manifest, catalog)
+    for warning in warnings:
+        print(f"scan: warning: {warning}")
+    for problem in problems:
+        print(f"scan: {problem}", file=sys.stderr)
+    print(f"scan: {len(problems)} problem(s), {len(warnings)} warning(s)")
+    return 1 if problems else 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the CLI; returns the process exit code."""
     args = build_parser().parse_args(argv)
     if args.command == "ingest":
         return _ingest(args)
+    if args.command == "access":
+        return _access(args)
+    if args.command == "scan":
+        return _scan(args)
     if args.command == "metrics":
         return _metrics(args)
     if args.command == "lint-dialect":

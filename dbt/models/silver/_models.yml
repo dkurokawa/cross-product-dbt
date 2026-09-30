@@ -1,132 +1,784 @@
 version: 2
-
-# Silver: the shared model. Personal data is present here (dim_member); who may see it is
-# decided by later layers.
-
 models:
-  - name: xref_member
-    description: "Every (source, source member id) mapped to one canonical member_key."
-    columns:
-      - name: member_key
-        data_tests: [not_null]
+- name: xref_member
+  description: Every (source, source member id) mapped to one canonical member_key.
+  columns:
+  - name: source
+    config:
+      meta:
+        pii: none
+  - name: source_member_id
+    config:
+      meta:
+        pii: quasi
+  - name: source_member_key
+    config:
+      meta:
+        pii: quasi
+  - name: member_key
     data_tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: [source, source_member_id]
-
-  - name: dim_member
-    description: "One row per real person across A-D, with flags for the products they appear in."
-    columns:
-      - name: member_key
-        data_tests: [unique, not_null]
-      - name: household_key
-        data_tests: [not_null]
-
-  - name: dim_household
-    description: "Households: a payer plus the people who use the service."
-    columns:
-      - name: household_key
-        data_tests: [unique, not_null]
-
-  - name: dim_account
-    description: "Corporate accounts from the sales sheet (E)."
-    columns:
-      - name: account_key
-        data_tests: [unique, not_null]
-
-  - name: c_member_current
-    description: "Latest state per C member; erased members are flagged, not dropped."
-    columns:
-      - name: member_id
-        data_tests: [unique, not_null]
-
-  - name: c_contract_current
-    description: "Latest state per contract, either table generation."
-    columns:
-      - name: contract_id
-        data_tests: [unique, not_null]
-      - name: plan_ref
-        data_tests:
-          - relationships:
-              arguments:
-                to: ref('dim_plan')
-                field: plan_ref
-
-  - name: int_c_contract_log
-    description: "Both contract table generations in one shape (namespaced plan_ref)."
-
-  - name: scd_contract
-    description: "Contract history (SCD2). No-op updates are collapsed; deletes are a final version."
-    columns:
-      - name: plan_ref
-        data_tests:
-          # An unmapped plan code must fail the build, not quietly become NULL.
-          - relationships:
-              arguments:
-                to: ref('dim_plan')
-                field: plan_ref
-      - name: is_current
-        data_tests: [not_null]
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: link_ambiguous
+    config:
+      meta:
+        pii: none
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - source
+        - source_member_id
+- name: dim_member
+  description: One row per real person across A-D, with flags for the products they appear in.
+  columns:
+  - name: member_key
     data_tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: [contract_id, valid_from]
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: household_key
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: key_method
+    config:
+      meta:
+        pii: none
+  - name: name
+    config:
+      meta:
+        pii: direct
+        mask: initial
+  - name: name_kana
+    config:
+      meta:
+        pii: direct
+        mask: initial
+  - name: email
+    config:
+      meta:
+        pii: direct
+        mask: email_domain
+  - name: phone
+    config:
+      meta:
+        pii: direct
+        mask: phone_last4
+  - name: birth_date
+    config:
+      meta:
+        pii: direct
+        mask: birth_year
+  - name: health_notes
+    config:
+      meta:
+        pii: sensitive
+  - name: medical_conditions
+    config:
+      meta:
+        pii: sensitive
+  - name: first_seen_at
+    config:
+      meta:
+        pii: quasi
+  - name: in_a
+    config:
+      meta:
+        pii: none
+  - name: in_b
+    config:
+      meta:
+        pii: none
+  - name: in_c
+    config:
+      meta:
+        pii: none
+  - name: in_d
+    config:
+      meta:
+        pii: none
+  - name: n_products
+    config:
+      meta:
+        pii: none
+  - name: has_live_record
+    config:
+      meta:
+        pii: none
+- name: dim_household
+  description: 'Households: a payer plus the people who use the service.'
+  columns:
+  - name: household_key
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: n_members
+    config:
+      meta:
+        pii: none
+  - name: is_family
+    config:
+      meta:
+        pii: none
+  - name: in_a
+    config:
+      meta:
+        pii: none
+  - name: in_b
+    config:
+      meta:
+        pii: none
+  - name: in_c
+    config:
+      meta:
+        pii: none
+  - name: in_d
+    config:
+      meta:
+        pii: none
+  - name: first_seen_at
+    config:
+      meta:
+        pii: quasi
+- name: dim_account
+  description: Corporate accounts from the sales sheet (E).
+  columns:
+  - name: account_key
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: company_name
+    config:
+      meta:
+        pii: none
+  - name: contact_name
+    config:
+      meta:
+        pii: direct
+        mask: initial
+  - name: sales_owner
+    config:
+      meta:
+        pii: quasi
+  - name: seats
+    config:
+      meta:
+        pii: none
+  - name: monthly_fee_yen
+    config:
+      meta:
+        pii: none
+  - name: first_month
+    config:
+      meta:
+        pii: none
+  - name: last_month
+    config:
+      meta:
+        pii: none
+  - name: status
+    config:
+      meta:
+        pii: none
+  - name: is_active
+    config:
+      meta:
+        pii: none
+- name: c_member_current
+  description: Latest state per C member; erased members are flagged, not dropped.
+  columns:
+  - name: member_id
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: name
+    config:
+      meta:
+        pii: direct
+        mask: initial
+  - name: name_kana
+    config:
+      meta:
+        pii: direct
+        mask: initial
+  - name: email
+    config:
+      meta:
+        pii: direct
+        mask: email_domain
+  - name: phone
+    config:
+      meta:
+        pii: direct
+        mask: phone_last4
+  - name: birth_date
+    config:
+      meta:
+        pii: direct
+        mask: birth_year
+  - name: guardian_email
+    config:
+      meta:
+        pii: direct
+        mask: email_domain
+  - name: medical_conditions
+    config:
+      meta:
+        pii: sensitive
+  - name: facility_id
+    config:
+      meta:
+        pii: none
+  - name: status
+    config:
+      meta:
+        pii: none
+  - name: joined_on
+    config:
+      meta:
+        pii: none
+  - name: member_key
+    config:
+      meta:
+        pii: quasi
+  - name: link_key
+    config:
+      meta:
+        pii: quasi
+  - name: key_method
+    config:
+      meta:
+        pii: none
+  - name: household_key
+    config:
+      meta:
+        pii: quasi
+  - name: last_changed_at
+    config:
+      meta:
+        pii: none
+  - name: is_deleted
+    config:
+      meta:
+        pii: none
+- name: c_contract_current
+  description: Latest state per contract, either table generation.
+  columns:
+  - name: contract_id
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: generation
+    config:
+      meta:
+        pii: none
+  - name: member_id
+    config:
+      meta:
+        pii: quasi
+  - name: member_key
+    config:
+      meta:
+        pii: quasi
+  - name: plan_ref
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_plan')
+          field: plan_ref
+    config:
+      meta:
+        pii: none
+  - name: plan_key
+    config:
+      meta:
+        pii: none
+  - name: monthly_fee_tax_incl
+    config:
+      meta:
+        pii: none
+  - name: monthly_fee_ex_tax
+    config:
+      meta:
+        pii: none
+  - name: start_date
+    config:
+      meta:
+        pii: none
+  - name: end_date
+    config:
+      meta:
+        pii: none
+  - name: payer_member_id
+    config:
+      meta:
+        pii: quasi
+  - name: status
+    config:
+      meta:
+        pii: none
+  - name: last_changed_at
+    config:
+      meta:
+        pii: none
+  - name: is_deleted
+    config:
+      meta:
+        pii: none
+- name: int_c_contract_log
+  description: Both contract table generations in one shape (namespaced plan_ref).
+  columns:
+  - name: generation
+    config:
+      meta:
+        pii: none
+  - name: op
+    config:
+      meta:
+        pii: none
+  - name: changed_at
+    config:
+      meta:
+        pii: none
+  - name: lsn
+    config:
+      meta:
+        pii: none
+  - name: contract_id
+    config:
+      meta:
+        pii: none
+  - name: member_id
+    config:
+      meta:
+        pii: quasi
+  - name: plan_ref
+    config:
+      meta:
+        pii: none
+  - name: monthly_fee_tax_incl
+    config:
+      meta:
+        pii: none
+  - name: monthly_fee_ex_tax
+    config:
+      meta:
+        pii: none
+  - name: start_date
+    config:
+      meta:
+        pii: none
+  - name: end_date
+    config:
+      meta:
+        pii: none
+  - name: payer_member_id
+    config:
+      meta:
+        pii: quasi
+  - name: status
+    config:
+      meta:
+        pii: none
+- name: scd_contract
+  description: Contract history (SCD2). No-op updates are collapsed; deletes are a final version.
+  columns:
+  - name: contract_id
+    config:
+      meta:
+        pii: none
+  - name: generation
+    config:
+      meta:
+        pii: none
+  - name: member_id
+    config:
+      meta:
+        pii: quasi
+  - name: member_key
+    config:
+      meta:
+        pii: quasi
+  - name: plan_ref
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_plan')
+          field: plan_ref
+    config:
+      meta:
+        pii: none
+  - name: plan_key
+    config:
+      meta:
+        pii: none
+  - name: monthly_fee_tax_incl
+    config:
+      meta:
+        pii: none
+  - name: monthly_fee_ex_tax
+    config:
+      meta:
+        pii: none
+  - name: start_date
+    config:
+      meta:
+        pii: none
+  - name: end_date
+    config:
+      meta:
+        pii: none
+  - name: payer_member_id
+    config:
+      meta:
+        pii: quasi
+  - name: status
+    config:
+      meta:
+        pii: none
+  - name: valid_from
+    config:
+      meta:
+        pii: none
+  - name: valid_to
+    config:
+      meta:
+        pii: none
+  - name: is_current
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: is_deleted
+    config:
+      meta:
+        pii: none
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - contract_id
+        - valid_from
+- name: int_member_source_rows
+  description: Current member record per product with the landing-time keys.
+  columns:
+  - name: source
+    config:
+      meta:
+        pii: none
+  - name: source_member_id
+    config:
+      meta:
+        pii: quasi
+  - name: member_key
+    config:
+      meta:
+        pii: quasi
+  - name: link_key
+    config:
+      meta:
+        pii: quasi
+  - name: key_method
+    config:
+      meta:
+        pii: none
+  - name: household_key
+    config:
+      meta:
+        pii: quasi
+  - name: name
+    config:
+      meta:
+        pii: direct
+        mask: initial
+  - name: name_kana
+    config:
+      meta:
+        pii: direct
+        mask: initial
+  - name: email
+    config:
+      meta:
+        pii: direct
+        mask: email_domain
+  - name: phone
+    config:
+      meta:
+        pii: direct
+        mask: phone_last4
+  - name: birth_date
+    config:
+      meta:
+        pii: direct
+        mask: birth_year
+  - name: health_notes
+    config:
+      meta:
+        pii: sensitive
+  - name: medical_conditions
+    config:
+      meta:
+        pii: sensitive
+  - name: joined_at
+    config:
+      meta:
+        pii: quasi
+  - name: is_deleted
+    config:
+      meta:
+        pii: none
+  - name: source_priority
+    config:
+      meta:
+        pii: none
+- name: fct_session
+  description: Workouts (A) and gym check-ins (C).
+  columns:
+  - name: session_id
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: source
+    config:
+      meta:
+        pii: none
+  - name: session_type
+    config:
+      meta:
+        pii: none
+  - name: member_key
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: started_at
+    config:
+      meta:
+        pii: none
+  - name: session_date_jst
+    config:
+      meta:
+        pii: none
+  - name: duration_min
+    config:
+      meta:
+        pii: none
+  - name: facility_id
+    config:
+      meta:
+        pii: none
+- name: fct_booking
+  description: Bookings (B), latest snapshot; tax-exclusive price with the derived tax-inclusive price.
+  columns:
+  - name: booking_id
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: tenant_id
+    config:
+      meta:
+        pii: none
+  - name: member_key
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: booked_at
+    config:
+      meta:
+        pii: none
+  - name: class_start_at
+    config:
+      meta:
+        pii: none
+  - name: class_date_jst
+    config:
+      meta:
+        pii: none
+  - name: status
+    config:
+      meta:
+        pii: none
+  - name: price_ex_tax
+    config:
+      meta:
+        pii: none
+  - name: price_tax_incl
+    config:
+      meta:
+        pii: none
+  - name: tax_rate
+    config:
+      meta:
+        pii: none
+  - name: is_deleted
+    config:
+      meta:
+        pii: none
+  - name: as_of_snapshot
+    config:
+      meta:
+        pii: none
+- name: fct_payment
+  description: 'Money from A (in-app purchases) and D (invoices, refunds), tax-inclusive, with the amount
+    as the source stated it kept in amount_original.
 
-  - name: int_member_source_rows
-    description: "Current member record per product with the landing-time keys."
-
-  - name: fct_session
-    description: "Workouts (A) and gym check-ins (C)."
-    columns:
-      - name: session_id
-        data_tests: [unique, not_null]
-      - name: member_key
-        data_tests: [not_null]
-
-  - name: fct_booking
-    description: "Bookings (B), latest snapshot; tax-exclusive price with the derived tax-inclusive price."
-    columns:
-      - name: booking_id
-        data_tests: [unique, not_null]
-      - name: member_key
-        data_tests: [not_null]
-
-  - name: fct_payment
-    description: >
-      Money from A (in-app purchases) and D (invoices, refunds), tax-inclusive, with the amount
-      as the source stated it kept in amount_original.
-    columns:
-      - name: payment_id
-        data_tests: [unique, not_null]
-      - name: member_key
-        data_tests: [not_null]
-      - name: payment_type
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: [charge, refund]
-      - name: plan_ref
-        data_tests:
-          - relationships:
-              arguments:
-                to: ref('dim_plan')
-                field: plan_ref
-
-  - name: fct_activity
-    description: "Union of every activity that counts as a member being active (sessions + attended bookings)."
-    columns:
-      - name: activity_id
-        data_tests: [unique, not_null]
-      - name: member_key
-        data_tests: [not_null]
-
-  - name: dim_member_product
-    description: "One row per (member, product): the products a person is a customer of."
-    columns:
-      - name: member_key
-        data_tests: [not_null]
-      - name: product
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: [A, B, C, D]
+    '
+  columns:
+  - name: payment_id
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: source
+    config:
+      meta:
+        pii: none
+  - name: payment_type
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - charge
+          - refund
+    config:
+      meta:
+        pii: none
+  - name: member_key
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: plan_ref
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_plan')
+          field: plan_ref
+    config:
+      meta:
+        pii: none
+  - name: occurred_at
+    config:
+      meta:
+        pii: none
+  - name: amount_ex_tax
+    config:
+      meta:
+        pii: none
+  - name: amount_tax_incl
+    config:
+      meta:
+        pii: none
+  - name: amount_original
+    config:
+      meta:
+        pii: none
+  - name: amount_original_basis
+    config:
+      meta:
+        pii: none
+  - name: tax_rate
+    config:
+      meta:
+        pii: none
+- name: fct_activity
+  description: Union of every activity that counts as a member being active (sessions + attended bookings).
+  columns:
+  - name: activity_id
+    data_tests:
+    - unique
+    - not_null
+    config:
+      meta:
+        pii: none
+  - name: member_key
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: occurred_at
+    config:
+      meta:
+        pii: none
+  - name: activity_date_jst
+    config:
+      meta:
+        pii: none
+  - name: activity_type
+    config:
+      meta:
+        pii: none
+  - name: source
+    config:
+      meta:
+        pii: none
+- name: dim_member_product
+  description: 'One row per (member, product): the products a person is a customer of.'
+  columns:
+  - name: member_key
+    data_tests:
+    - not_null
+    config:
+      meta:
+        pii: quasi
+  - name: product
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - A
+          - B
+          - C
+          - D
+    config:
+      meta:
+        pii: none
+- name: int_link_map
+  description: Each link_key (phone+kana) with the e-mail identity it resolves to and how many e-mail
+    identities share it.
+  columns:
+  - name: link_key
+    config:
+      meta:
+        pii: quasi
+  - name: email_member_key
+    config:
+      meta:
+        pii: quasi
+  - name: n_email_keys
+    config:
+      meta:
+        pii: none

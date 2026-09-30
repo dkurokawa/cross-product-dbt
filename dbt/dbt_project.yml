@@ -26,6 +26,11 @@ models:
     gold:
       +materialized: table
       +schema: gold
+    # F6: the access layer is always materialized as TABLES (never views over external files),
+    # so a role's read-only, no-external-access database can hold them.
+    access:
+      +materialized: table
+      +schema: access
 
 seeds:
   platform:

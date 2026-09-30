@@ -1,0 +1,57 @@
+# The single source for who may see what (design decisions F4, F5).
+#
+# `platform access generate` turns this into
+#   * dbt/models/access/acc_<role>__<table>.sql   one table per role and table, the ONLY thing
+#                                                  a user is ever pointed at,
+#   * dbt/models/access/_access.yml               their documentation and pii classes,
+#   * policies/gateway_allowlist.json             the tables and columns the query gateway
+#                                                  may let each role read.
+# Never edit the generated files. CI regenerates and fails on any difference.
+#
+# Order of protection (F4): hide -> show masked -> copy.
+#   sensitive  never appears for a role with `sensitive: exclude`;
+#   direct     is masked (mask kind declared in dbt as meta.mask) for `direct: mask` roles,
+#              e-mail -> domain only, phone -> last 4 digits, birth date -> year only,
+#              name -> first character only;
+#   quasi/none are passed through.
+version: 1
+
+roles:
+  analyst:
+    description: All products; masked personal data; no sensitive columns.
+    products: all
+    sensitive: exclude
+    direct: mask
+  product_a: {description: Product A rows only; masked; no sensitive columns., products: [A], sensitive: exclude, direct: mask}
+  product_b: {description: Product B rows only; masked; no sensitive columns., products: [B], sensitive: exclude, direct: mask}
+  product_c: {description: Product C rows only; masked; no sensitive columns., products: [C], sensitive: exclude, direct: mask}
+  product_d: {description: Product D rows only; masked; no sensitive columns., products: [D], sensitive: exclude, direct: mask}
+  product_e: {description: Product E rows only; masked; no sensitive columns., products: [E], sensitive: exclude, direct: mask}
+  privacy_officer:
+    description: Audit role. Everything, including sensitive columns and unmasked personal data.
+    products: all
+    sensitive: include
+    direct: clear
+
+# row_scope decides what a product role may see of a table:
+#   none    no product dimension (reference data): every role sees all rows
+#   flags   one boolean column per product (`columns`): rows where the role's flag is true
+#   column  a column that holds the product: rows where it equals the role's product
+#   fixed   the table belongs to one product: only that product's role gets it
+tables:
+  - {name: dim_member, layer: silver, row_scope: {kind: flags, columns: {A: in_a, B: in_b, C: in_c, D: in_d}}}
+  - {name: dim_household, layer: silver, row_scope: {kind: flags, columns: {A: in_a, B: in_b, C: in_c, D: in_d}}}
+  - {name: dim_account, layer: silver, row_scope: {kind: fixed, product: E}}
+  - {name: dim_plan, layer: silver, row_scope: {kind: none}}
+  - {name: fct_session, layer: silver, row_scope: {kind: column, column: source}}
+  - {name: fct_booking, layer: silver, row_scope: {kind: fixed, product: B}}
+  - {name: fct_payment, layer: silver, row_scope: {kind: column, column: source}}
+  - {name: fct_activity, layer: silver, row_scope: {kind: column, column: source}}
+  - {name: scd_contract, layer: silver, row_scope: {kind: fixed, product: C}}
+  - {name: identity_quality, layer: gold, row_scope: {kind: column, column: source}}
+  - {name: ingest_quality_daily, layer: gold, row_scope: {kind: column, column: source}}
+
+# Every generated metric_* and recon_* model (from metrics/metrics.yml) is exposed too, scoped by
+# its `product` column.
+generated_metrics:
+  row_scope: {kind: column, column: product}
