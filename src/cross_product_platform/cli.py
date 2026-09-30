@@ -13,6 +13,15 @@ from .config import GeneratorConfig
 from .dialect_lint import scan_directory
 from .identity import MissingSaltError
 from .ingest import LakeNotEmptyError, run_ingest
+from .metrics.check import (
+    check_generated,
+    check_manifest,
+    check_reported,
+    load_json,
+    write_files,
+)
+from .metrics.codegen import generate_files
+from .metrics.spec import SpecError, load_spec
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -49,6 +58,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-generate", action="store_true", help="only land what is already in <root>/_incoming"
     )
 
+    metrics = sub.add_parser("metrics", help="generate / check the metric models from metrics.yml")
+    msub = metrics.add_subparsers(dest="metrics_command", required=True)
+    for name, text in (("generate", "write the generated files"), ("check", "run the guards")):
+        p = msub.add_parser(name, help=text)
+        p.add_argument("--spec", type=Path, default=Path("metrics/metrics.yml"))
+        p.add_argument("--repo-root", type=Path, default=Path("."))
+        if name == "check":
+            p.add_argument("--manifest", type=Path, default=Path("dbt/target/manifest.json"))
+            p.add_argument("--catalog", type=Path, default=Path("dbt/target/catalog.json"))
+            p.add_argument("--root", type=Path, default=None, help="lake root (for check 3)")
+            p.add_argument("--only-generated", action="store_true", help="skip checks 2 and 3")
+
     lint = sub.add_parser("lint-dialect", help="grep dbt models for warehouse-specific functions")
     lint.add_argument("models_dir", type=Path, nargs="?", default=Path("dbt/models"))
     return parser
@@ -83,11 +104,41 @@ def _ingest(args: argparse.Namespace) -> int:
     return 0
 
 
+def _metrics(args: argparse.Namespace) -> int:
+    try:
+        spec = load_spec(args.spec)
+    except (SpecError, OSError) as err:
+        print(f"metrics: {err}", file=sys.stderr)
+        return 2
+    if args.metrics_command == "generate":
+        files = generate_files(spec)
+        write_files(files, args.repo_root)
+        print(f"metrics generate: {len(files)} files written")
+        return 0
+    problems = check_generated(spec, args.repo_root)
+    if not args.only_generated:
+        try:
+            manifest = load_json(args.manifest)
+            catalog = load_json(args.catalog) if args.catalog.exists() else None
+        except (OSError, ValueError) as err:
+            print(f"metrics check: cannot read dbt artifacts: {err}", file=sys.stderr)
+            return 2
+        problems += check_manifest(spec, manifest, catalog)
+        if args.root is not None:
+            problems += check_reported(spec, args.root)
+    for problem in problems:
+        print(f"metrics check: {problem}", file=sys.stderr)
+    print(f"metrics check: {len(problems)} problem(s)")
+    return 1 if problems else 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the CLI; returns the process exit code."""
     args = build_parser().parse_args(argv)
     if args.command == "ingest":
         return _ingest(args)
+    if args.command == "metrics":
+        return _metrics(args)
     if args.command == "lint-dialect":
         violations = scan_directory(args.models_dir)
         for violation in violations:

@@ -14,10 +14,10 @@ export PLATFORM_WAREHOUSE := $(abspath $(WAREHOUSE))
 DBT := uv run dbt
 DBT_ARGS := --project-dir dbt --profiles-dir dbt
 
-.PHONY: demo ingest deps dbt-build freshness test lint lint-py lint-sql lint-dialect \
+.PHONY: demo ingest deps dbt-build freshness docs checks generate test lint lint-py lint-sql lint-dialect \
 	bq-compile anomaly-check unmapped-check
 
-demo: ingest deps dbt-build freshness
+demo: ingest deps dbt-build freshness docs checks
 
 ingest:
 	uv run platform ingest --root $(LAKE) --overwrite
@@ -31,6 +31,18 @@ dbt-build:
 
 freshness:
 	$(DBT) source freshness $(DBT_ARGS)
+
+# The catalog (actual column lists) is what the metric-name guard scans.
+docs:
+	$(DBT) docs generate $(DBT_ARGS)
+
+# Guards: generated files up to date, no hand-written metric-named columns, every reported
+# KPI is a known variant.
+checks:
+	uv run platform metrics check --root $(LAKE)
+
+generate:
+	uv run platform metrics generate
 
 test:
 	uv run pytest --cov=cross_product_platform --cov-fail-under=90

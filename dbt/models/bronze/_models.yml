@@ -165,3 +165,6 @@ models:
 
   - name: brz_quarantine_log
     description: "Files quarantined by the landing step."
+
+  - name: brz_landing_log
+    description: "Files and rows accepted by the landing step per partition."

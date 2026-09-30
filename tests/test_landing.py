@@ -133,7 +133,14 @@ def test_undecodable_d_file_is_quarantined(tmp_path: Path) -> None:
     assert [q.stage for q in report.quarantined] == ["read"]
 
 
-@pytest.mark.parametrize("name", ["identity_stats", "quarantine_log"])
+@pytest.mark.parametrize("name", ["identity_stats", "quarantine_log", "landing_log"])
 def test_meta_tables_exist_even_when_empty(tmp_path: Path, name: str) -> None:
     Landing(tmp_path / "_incoming", tmp_path, TEST_SALT.encode()).run()
     assert (tmp_path / "_meta" / name / "part-000.parquet").exists()
+
+
+def test_landing_log_counts_files_per_partition(lake: IngestResult) -> None:
+    log = pd.read_parquet(lake.root / "_meta" / "landing_log")
+    assert int(log["files_landed"].sum()) == sum(lake.report.files_landed.values())
+    e = log[(log["source"] == "E") & (log["partition_date"] == "2026-04")]
+    assert int(e["files_landed"].sum()) == 1  # the _v2 file next to it was quarantined

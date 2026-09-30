@@ -34,6 +34,10 @@ to_int = {% macro to_int(expr) %}cast({{ expr }} as bigint){% endmacro %}
 to_decimal = {% macro to_decimal(expr) %}cast({{ expr }} as numeric){% endmacro %}
 to_str = {% macro to_str(expr) %}cast({{ expr }} as varchar){% endmacro %}
 to_bigint = {% macro to_bigint(expr) %}cast({{ expr }} as bigint){% endmacro %}
+to_numeric = {% macro to_numeric(expr) %}cast({{ expr }} as numeric){% endmacro %}
+month_start = {% macro month_start(expr) %}cast(date_trunc('month', {{ expr }}) as date){% endmacro %}
+month_end_date = {% macro month_end_date(expr) %}cast(date_trunc('month', {{ expr }}) as date){% endmacro %}
+add_days = {% macro add_days(expr, n) %}cast({{ expr }} as date){% endmacro %}
 row_hash = {% macro row_hash(columns) %}md5(concat({{ columns | join(', ') }})){% endmacro %}
 
 # `source`, `name`, `value`, `file`, `partition_date`... are ordinary column names in every

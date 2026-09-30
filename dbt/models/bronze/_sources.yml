@@ -118,3 +118,8 @@ sources:
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/_meta/quarantine_log/*.parquet')"
+      - name: landing_log
+        description: "Files and rows the landing step accepted, per source, dataset and partition."
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/_meta/landing_log/*.parquet')"

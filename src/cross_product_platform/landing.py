@@ -55,6 +55,8 @@ class LandingReport:
     quarantined: list[QuarantinedFile] = field(default_factory=list)
     #: (source, key_method) -> distinct source member ids
     identity: dict[tuple[str, str], set[str]] = field(default_factory=dict)
+    #: (source, dataset, partition) -> [files, rows] that were landed
+    landed_log: dict[tuple[str, str, str], list[int]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -181,6 +183,11 @@ class Landing:
         path.unlink()
         self.report.files_landed[ds.source] += 1
         self.report.rows_landed[ds.source] += len(frame)
+        entry = self.report.landed_log.setdefault(
+            (ds.source, ds.dataset, self._partition(rel)), [0, 0]
+        )
+        entry[0] += 1
+        entry[1] += len(frame)
 
     # ------------------------------------------------------------------ IO
     def _read(self, ds: _Dataset, path: Path) -> tuple[pd.DataFrame, pa.Schema | None]:
@@ -204,12 +211,16 @@ class Landing:
         else:
             frame.to_csv(target, index=False, encoding="utf-8")
 
+    def _partition(self, rel: Path) -> str:
+        """The ``dt=`` / ``month=`` value of a path, or the ingest day if it has none."""
+        match = _PARTITION.search(str(rel))
+        return match.group(1) if match else self.now.date().isoformat()
+
     def _quarantine(
         self, ds: _Dataset, path: Path, stage: str, details: list[dict[str, object]]
     ) -> None:
         rel = path.relative_to(self.incoming)
-        match = _PARTITION.search(str(rel))
-        partition = match.group(1) if match else self.now.date().isoformat()
+        partition = self._partition(rel)
         target_dir = self.root / "quarantine" / ds.source / partition
         target_dir.mkdir(parents=True, exist_ok=True)
         name = f"{ds.dataset}__{path.name}"
@@ -340,7 +351,32 @@ class Landing:
         quarantine["quarantined_at"] = pd.Series(
             [self.now] * len(quarantine), dtype="datetime64[us, UTC]"
         )
-        for name, frame in (("identity_stats", stats), ("quarantine_log", quarantine)):
+        landing = pd.DataFrame(
+            [
+                {
+                    "source": k[0],
+                    "dataset": k[1],
+                    "partition_date": k[2],
+                    "files_landed": v[0],
+                    "rows_landed": v[1],
+                }
+                for k, v in sorted(self.report.landed_log.items())
+            ],
+            columns=["source", "dataset", "partition_date", "files_landed", "rows_landed"],
+        ).astype(
+            {
+                "source": "object",
+                "dataset": "object",
+                "partition_date": "object",
+                "files_landed": "int64",
+                "rows_landed": "int64",
+            }
+        )
+        for name, frame in (
+            ("identity_stats", stats),
+            ("quarantine_log", quarantine),
+            ("landing_log", landing),
+        ):
             target = self.root / "_meta" / name
             target.mkdir(parents=True, exist_ok=True)
             frame.to_parquet(target / "part-000.parquet", index=False)

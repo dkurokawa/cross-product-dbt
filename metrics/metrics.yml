@@ -1,0 +1,159 @@
+# The single source of truth for shared metrics (design decision F1).
+#
+# `platform metrics generate` turns this file into the gold metric models, the reconciliation
+# models, their contracts/tests and docs/metrics.md. Never edit the generated files; edit this
+# file and regenerate. CI regenerates and fails on any difference.
+#
+# A `known_variant` is a product's own KPI that carries the same idea under another
+# definition. It documents *why* the product's number differs from the canonical one:
+#   expected_direction  higher | lower | any   reported vs canonical
+#   direction_tolerance_pct  how far "wrong" the direction may be before it counts as a failure
+#   threshold_pct       largest |reported - canonical| / canonical, in percent, still explained
+#   comparable          false when the canonical metric has no counterpart for that product
+# The thresholds were set after looking at the first reconciliation run on the fixed seed
+# (see README); they say "this much difference is what the definition change explains".
+version: 1
+
+metrics:
+  - name: active_members
+    description: Members who did something (workout, gym visit, attended booking) in the 30 days ending on the last day of the month.
+    owner: data-platform
+    entity: member_key
+    grain: [month]
+    kind: distinct_entities_in_window
+    definition:
+      model: fct_activity
+      entity_column: member_key
+      date_column: activity_date_jst
+      source_column: source
+      row_id_column: activity_id
+      filter: "activity_type in ('workout', 'visit', 'booking_attended')"
+      window_days: 30
+    # How a product's canonical value is scoped. A/B/C count what happened in that product;
+    # D has no activity of its own, so its scope is the people who are D customers.
+    scopes:
+      ALL: all
+      A: source
+      B: source
+      C: source
+      D: population
+    known_variants:
+      - product: A
+        reported_as: active_users
+        definition: Opened the app in the 30 days (no workout needed).
+        expected_direction: higher
+        threshold_pct: 30
+      - product: B
+        reported_as: active_customers
+        definition: Created a booking in the 28 days (attendance not needed, cancellations count).
+        expected_direction: higher
+        direction_tolerance_pct: 10
+        threshold_pct: 15
+      - product: C
+        reported_as: active_members
+        definition: Holds a contract on the last day of the month (paused included).
+        expected_direction: higher
+        threshold_pct: 40
+      - product: D
+        reported_as: billed_customers
+        definition: Invoiced in the month (quarterly and annual plans are invoiced rarely).
+        expected_direction: higher
+        threshold_pct: 120
+      - product: E
+        reported_as: seats_under_contract
+        definition: Seats sold to companies; a corporate seat is not a member.
+        comparable: false
+        note: Corporate accounts have no member-level activity, so there is no canonical counterpart.
+
+  - name: net_revenue
+    description: Tax-inclusive money received minus refunds, by calendar month (Tokyo time).
+    owner: data-platform
+    entity: payment_id
+    grain: [month]
+    kind: sum_by_month
+    definition:
+      model: fct_payment
+      amount_column: amount_tax_incl
+      timestamp_column: occurred_at
+      source_column: source
+    scopes:
+      ALL: all
+      A: source
+      D: source
+    known_variants:
+      - product: A
+        reported_as: iap_revenue
+        definition: In-app purchases, tax-inclusive, month cut in UTC instead of Tokyo time.
+        expected_direction: any
+        threshold_pct: 2
+      - product: B
+        reported_as: booking_revenue
+        definition: Tax-exclusive price of bookings whose class falls in the month.
+        comparable: false
+        note: Booking prices are not payments; fct_payment holds only A purchases and D invoices/refunds.
+      - product: C
+        reported_as: monthly_revenue
+        definition: Tax-inclusive monthly fee of contracts alive on the last day of the month.
+        comparable: false
+        note: Contract fees are not payments; fct_payment holds only A purchases and D invoices/refunds.
+      - product: D
+        reported_as: net_sales
+        definition: Tax-exclusive invoices minus tax-exclusive refunds.
+        expected_direction: lower
+        threshold_pct: 15
+      - product: E
+        reported_as: mrr
+        definition: Tax-exclusive monthly fee column of the sales sheet.
+        comparable: false
+        note: Corporate contracts are not in fct_payment.
+
+  - name: churned_members
+    description: Members active in the 30 days ending the previous month-end and not active in the 30 days ending this month-end.
+    owner: data-platform
+    entity: member_key
+    grain: [month]
+    kind: lapsed_between_windows
+    definition:
+      active_metric: active_members
+    known_variants:
+      - product: B
+        reported_as: lost_customers
+        definition: Customers with a booking who created none in 60 days.
+        comparable: false
+        note: A booking-inactivity rule of another length; the relationship to canonical churn is not stable.
+      - product: C
+        reported_as: churned_members
+        definition: Contracts ending in the month (a migration to the new price list counts as a churn).
+        comparable: false
+        note: Counts contract events, and the April price-list migration alone multiplies it; no stable relationship.
+      - product: D
+        reported_as: cancelled_customers
+        definition: Customers not invoiced in 60 days (quarterly/annual plans look cancelled).
+        comparable: false
+        note: Invoice cadence, not activity; no stable relationship.
+
+  - name: sessions_per_active_member
+    description: Activities in the 30-day window divided by active_members over the same window.
+    owner: data-platform
+    entity: member_key
+    grain: [month]
+    kind: rows_per_active
+    definition:
+      active_metric: active_members
+    known_variants:
+      - product: A
+        reported_as: workouts_per_user
+        definition: Workouts in the month divided by everyone who opened the app.
+        expected_direction: lower
+        threshold_pct: 30
+      - product: B
+        reported_as: bookings_per_customer
+        definition: Bookings created (any status) divided by customers who created one.
+        expected_direction: higher
+        direction_tolerance_pct: 5
+        threshold_pct: 60
+      - product: C
+        reported_as: avg_visits_per_member
+        definition: Check-ins divided by everyone holding a contract.
+        expected_direction: lower
+        threshold_pct: 35

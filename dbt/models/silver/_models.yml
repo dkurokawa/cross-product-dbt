@@ -119,3 +119,14 @@ models:
         data_tests: [unique, not_null]
       - name: member_key
         data_tests: [not_null]
+
+  - name: dim_member_product
+    description: "One row per (member, product): the products a person is a customer of."
+    columns:
+      - name: member_key
+        data_tests: [not_null]
+      - name: product
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [A, B, C, D]

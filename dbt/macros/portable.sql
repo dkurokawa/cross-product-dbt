@@ -95,3 +95,18 @@
 {% macro to_str(expr) %}cast({{ expr }} as {{ dbt.type_string() }}){% endmacro %}
 
 {% macro to_bigint(expr) %}cast({{ expr }} as {{ dbt.type_bigint() }}){% endmacro %}
+
+{% macro to_numeric(expr) %}cast({{ expr }} as {{ dbt.type_numeric() }}){% endmacro %}
+
+{# --- calendar ------------------------------------------------------------------ #}
+
+{# First day of the month of a date. #}
+{% macro month_start(expr) %}cast({{ dbt.date_trunc('month', expr) }} as date){% endmacro %}
+
+{# Last day of the month of a date. #}
+{% macro month_end_date(expr) %}
+    cast({{ dbt.dateadd('day', -1, dbt.dateadd('month', 1, dbt.date_trunc('month', expr))) }} as date)
+{% endmacro %}
+
+{# A date moved by n days. #}
+{% macro add_days(expr, n) %}cast({{ dbt.dateadd('day', n, expr) }} as date){% endmacro %}

@@ -15,3 +15,19 @@ models:
                 values: [email, phone, phone_kana, source_local, ambiguous_link]
       - name: n
         data_tests: [not_null]
+
+  - name: ingest_quality_daily
+    description: >
+      Files accepted and quarantined per source, dataset and delivery partition (a day, or a
+      month for E). Quarantined files are never silently dropped: they are counted here.
+    columns:
+      - name: source
+        data_tests: [not_null]
+      - name: dataset
+        data_tests: [not_null]
+      - name: partition_date
+        data_tests: [not_null]
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [source, dataset, partition_date]
