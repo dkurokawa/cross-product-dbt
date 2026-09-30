@@ -19,11 +19,13 @@ from .access import (
     load_policy,
     write_access_files,
 )
+from .catalog import build_catalog, write_catalog
 from .config import GeneratorConfig
 from .dialect_lint import scan_directory
 from .gateway import MAX_LIMIT, Gateway, GatewayError, QueryDeniedError
 from .identity import MissingSaltError
 from .ingest import LakeNotEmptyError, run_ingest
+from .mcp_server import serve_from_env
 from .metrics.check import (
     check_generated,
     check_manifest,
@@ -118,6 +120,22 @@ def build_parser() -> argparse.ArgumentParser:
     _gateway_paths(query)
     query.add_argument("sql")
 
+    catalog = sub.add_parser("catalog", help="build the data catalog from dbt's artifacts")
+    csub = catalog.add_subparsers(dest="catalog_command", required=True)
+    build = csub.add_parser("build")
+    build.add_argument("--manifest", type=Path, default=Path("dbt/target/manifest.json"))
+    build.add_argument("--catalog", type=Path, default=Path("dbt/target/catalog.json"))
+    build.add_argument("--spec", type=Path, default=Path("metrics/metrics.yml"))
+    build.add_argument("--allowlist", type=Path, default=Path("policies/gateway_allowlist.json"))
+    build.add_argument("--out-dir", type=Path, default=Path("build/catalog"))
+
+    serve = sub.add_parser(
+        "serve-mcp",
+        help="MCP server (stdio); role and principal come from PLATFORM_ROLE / PLATFORM_PRINCIPAL",
+    )
+    _gateway_paths(serve)
+    serve.add_argument("--catalog-dir", type=Path, default=Path("build/catalog"))
+
     lint = sub.add_parser("lint-dialect", help="grep dbt models for warehouse-specific functions")
     lint.add_argument("models_dir", type=Path, nargs="?", default=Path("dbt/models"))
     return parser
@@ -178,6 +196,33 @@ def _metrics(args: argparse.Namespace) -> int:
         print(f"metrics check: {problem}", file=sys.stderr)
     print(f"metrics check: {len(problems)} problem(s)")
     return 1 if problems else 0
+
+
+def _serve(args: argparse.Namespace) -> int:
+    try:
+        serve_from_env(
+            allowlist_path=args.allowlist,
+            warehouse_dir=args.warehouse_dir,
+            audit_root=args.audit_root,
+            catalog_dir=args.catalog_dir,
+        )
+    except GatewayError as err:
+        print(f"serve-mcp: {err}", file=sys.stderr)
+        return 2
+    return 0
+
+
+def _catalog(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_json(args.manifest)
+        warehouse_catalog = load_json(args.catalog)
+        full = build_catalog(manifest, warehouse_catalog, load_spec(args.spec))
+        written = write_catalog(args.out_dir, full, load_allowlist(args.allowlist))
+    except (OSError, ValueError, SpecError) as err:
+        print(f"catalog: {err}", file=sys.stderr)
+        return 2
+    print(f"catalog build: {len(full['tables'])} tables, {len(written)} files -> {args.out_dir}")
+    return 0
 
 
 def _build_roles(args: argparse.Namespace) -> int:
@@ -254,6 +299,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "ingest":
         return _ingest(args)
+    if args.command == "serve-mcp":
+        return _serve(args)
+    if args.command == "catalog":
+        return _catalog(args)
     if args.command == "build-roles":
         return _build_roles(args)
     if args.command == "query":

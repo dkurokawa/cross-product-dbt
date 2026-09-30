@@ -15,10 +15,10 @@ export PLATFORM_AUDIT_ROOT := $(abspath build/audit)
 DBT := uv run dbt
 DBT_ARGS := --project-dir dbt --profiles-dir dbt
 
-.PHONY: demo ingest deps dbt-build roles audit freshness docs checks generate test lint lint-py lint-sql lint-dialect \
+.PHONY: demo ingest deps dbt-build roles audit catalog mcp-smoke freshness docs checks generate test lint lint-py lint-sql lint-dialect \
 	bq-compile anomaly-check unmapped-check
 
-demo: ingest deps dbt-build roles audit freshness docs checks
+demo: ingest deps dbt-build roles audit freshness docs checks catalog mcp-smoke
 
 ingest:
 	uv run platform ingest --root $(LAKE) --overwrite
@@ -41,6 +41,13 @@ audit:
 	uv run python scripts/audit_demo.py write
 	$(DBT) build $(DBT_ARGS) --select tag:audit
 	uv run python scripts/audit_demo.py check
+
+catalog:
+	uv run platform catalog build
+
+# The real MCP server on the demo warehouse: every tool once, and the analyst is refused health_notes.
+mcp-smoke:
+	uv run python scripts/mcp_smoke.py
 
 freshness:
 	$(DBT) source freshness $(DBT_ARGS) --exclude source:audit
