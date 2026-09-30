@@ -8,3 +8,4 @@ select
     plan_name,
     billing_period_months
 from {{ ref('dim_plan') }}
+where source = 'C'

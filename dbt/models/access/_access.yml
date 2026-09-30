@@ -852,23 +852,33 @@ models:
   - name: acc_product_a__dim_member
     description: "Role product_a: access copy of dim_member."
     columns:
+      - name: product
+        description: "Product whose own record this row comes from (A-D)."
+        config:
+          meta:
+            pii: none
       - name: member_key
-        description: "Canonical member key: the same person in different products has the same key."
+        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
+        config:
+          meta:
+            pii: quasi
+      - name: source_member_id
+        description: "The product's own member identifier (D: its derived key)."
         config:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household of the highest-priority record."
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: key_method
-        description: "How the winning record's key was derived."
+        description: "How member_key was derived: email, phone, phone_kana or source_local."
         config:
           meta:
             pii: none
       - name: name_initial
-        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
+        description: "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
@@ -892,117 +902,39 @@ models:
         config:
           meta:
             pii: quasi
-      - name: first_seen_at
-        description: "Earliest time any product knew this person or household."
+      - name: joined_at
+        description: "When the person joined this product."
         config:
           meta:
             pii: quasi
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
-        config:
-          meta:
-            pii: none
-      - name: n_products
-        description: "In how many products the person appears."
-        config:
-          meta:
-            pii: none
   - name: acc_product_a__dim_household
     description: "Role product_a: access copy of dim_household."
     columns:
+      - name: product
+        description: "Product (A-D)."
+        config:
+          meta:
+            pii: none
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Household key of the product's own records."
         config:
           meta:
             pii: quasi
       - name: n_members
-        description: "Number of people in the household."
+        description: "Members of the household in this product."
         config:
           meta:
             pii: none
       - name: is_family
-        description: "True if more than one person is in the household."
-        config:
-          meta:
-            pii: none
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
+        description: "True if this product has more than one member in the household."
         config:
           meta:
             pii: none
       - name: first_seen_at
-        description: "Earliest time any member of the household was seen."
+        description: "When the product first saw a member of the household."
         config:
           meta:
             pii: quasi
-  - name: acc_product_a__dim_plan
-    description: "Role product_a: access copy of dim_plan."
-    columns:
-      - name: plan_ref
-        description: "Source plan code namespaced by source and generation (for example C26:P100)."
-        config:
-          meta:
-            pii: none
-      - name: source
-        description: "Product whose plan code this is (C or D)."
-        config:
-          meta:
-            pii: none
-      - name: generation
-        description: "C table generation (FY2025, FY2026); empty for D."
-        config:
-          meta:
-            pii: none
-      - name: source_plan_code
-        description: "Plan code as the source writes it."
-        config:
-          meta:
-            pii: none
-      - name: plan_key
-        description: "Unified plan across products and table generations."
-        config:
-          meta:
-            pii: none
-      - name: plan_name
-        description: "Human-readable plan name."
-        config:
-          meta:
-            pii: none
-      - name: billing_period_months
-        description: "Months between invoices for this plan."
-        config:
-          meta:
-            pii: none
   - name: acc_product_a__fct_session
     description: "Role product_a: access copy of fct_session."
     columns:
@@ -1500,23 +1432,33 @@ models:
   - name: acc_product_b__dim_member
     description: "Role product_b: access copy of dim_member."
     columns:
+      - name: product
+        description: "Product whose own record this row comes from (A-D)."
+        config:
+          meta:
+            pii: none
       - name: member_key
-        description: "Canonical member key: the same person in different products has the same key."
+        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
+        config:
+          meta:
+            pii: quasi
+      - name: source_member_id
+        description: "The product's own member identifier (D: its derived key)."
         config:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household of the highest-priority record."
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: key_method
-        description: "How the winning record's key was derived."
+        description: "How member_key was derived: email, phone, phone_kana or source_local."
         config:
           meta:
             pii: none
       - name: name_initial
-        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
+        description: "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
@@ -1540,117 +1482,39 @@ models:
         config:
           meta:
             pii: quasi
-      - name: first_seen_at
-        description: "Earliest time any product knew this person or household."
+      - name: joined_at
+        description: "When the person joined this product."
         config:
           meta:
             pii: quasi
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
-        config:
-          meta:
-            pii: none
-      - name: n_products
-        description: "In how many products the person appears."
-        config:
-          meta:
-            pii: none
   - name: acc_product_b__dim_household
     description: "Role product_b: access copy of dim_household."
     columns:
+      - name: product
+        description: "Product (A-D)."
+        config:
+          meta:
+            pii: none
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Household key of the product's own records."
         config:
           meta:
             pii: quasi
       - name: n_members
-        description: "Number of people in the household."
+        description: "Members of the household in this product."
         config:
           meta:
             pii: none
       - name: is_family
-        description: "True if more than one person is in the household."
-        config:
-          meta:
-            pii: none
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
+        description: "True if this product has more than one member in the household."
         config:
           meta:
             pii: none
       - name: first_seen_at
-        description: "Earliest time any member of the household was seen."
+        description: "When the product first saw a member of the household."
         config:
           meta:
             pii: quasi
-  - name: acc_product_b__dim_plan
-    description: "Role product_b: access copy of dim_plan."
-    columns:
-      - name: plan_ref
-        description: "Source plan code namespaced by source and generation (for example C26:P100)."
-        config:
-          meta:
-            pii: none
-      - name: source
-        description: "Product whose plan code this is (C or D)."
-        config:
-          meta:
-            pii: none
-      - name: generation
-        description: "C table generation (FY2025, FY2026); empty for D."
-        config:
-          meta:
-            pii: none
-      - name: source_plan_code
-        description: "Plan code as the source writes it."
-        config:
-          meta:
-            pii: none
-      - name: plan_key
-        description: "Unified plan across products and table generations."
-        config:
-          meta:
-            pii: none
-      - name: plan_name
-        description: "Human-readable plan name."
-        config:
-          meta:
-            pii: none
-      - name: billing_period_months
-        description: "Months between invoices for this plan."
-        config:
-          meta:
-            pii: none
   - name: acc_product_b__fct_session
     description: "Role product_b: access copy of fct_session."
     columns:
@@ -2211,23 +2075,33 @@ models:
   - name: acc_product_c__dim_member
     description: "Role product_c: access copy of dim_member."
     columns:
+      - name: product
+        description: "Product whose own record this row comes from (A-D)."
+        config:
+          meta:
+            pii: none
       - name: member_key
-        description: "Canonical member key: the same person in different products has the same key."
+        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
+        config:
+          meta:
+            pii: quasi
+      - name: source_member_id
+        description: "The product's own member identifier (D: its derived key)."
         config:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household of the highest-priority record."
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: key_method
-        description: "How the winning record's key was derived."
+        description: "How member_key was derived: email, phone, phone_kana or source_local."
         config:
           meta:
             pii: none
       - name: name_initial
-        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
+        description: "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
@@ -2251,76 +2125,36 @@ models:
         config:
           meta:
             pii: quasi
-      - name: first_seen_at
-        description: "Earliest time any product knew this person or household."
+      - name: joined_at
+        description: "When the person joined this product."
         config:
           meta:
             pii: quasi
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
-        config:
-          meta:
-            pii: none
-      - name: n_products
-        description: "In how many products the person appears."
-        config:
-          meta:
-            pii: none
   - name: acc_product_c__dim_household
     description: "Role product_c: access copy of dim_household."
     columns:
+      - name: product
+        description: "Product (A-D)."
+        config:
+          meta:
+            pii: none
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Household key of the product's own records."
         config:
           meta:
             pii: quasi
       - name: n_members
-        description: "Number of people in the household."
+        description: "Members of the household in this product."
         config:
           meta:
             pii: none
       - name: is_family
-        description: "True if more than one person is in the household."
-        config:
-          meta:
-            pii: none
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
+        description: "True if this product has more than one member in the household."
         config:
           meta:
             pii: none
       - name: first_seen_at
-        description: "Earliest time any member of the household was seen."
+        description: "When the product first saw a member of the household."
         config:
           meta:
             pii: quasi
@@ -2942,23 +2776,33 @@ models:
   - name: acc_product_d__dim_member
     description: "Role product_d: access copy of dim_member."
     columns:
+      - name: product
+        description: "Product whose own record this row comes from (A-D)."
+        config:
+          meta:
+            pii: none
       - name: member_key
-        description: "Canonical member key: the same person in different products has the same key."
+        description: "Canonical member key (same hash as in dim_member; says nothing about other products)."
+        config:
+          meta:
+            pii: quasi
+      - name: source_member_id
+        description: "The product's own member identifier (D: its derived key)."
         config:
           meta:
             pii: quasi
       - name: household_key
-        description: "Household of the highest-priority record."
+        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
         config:
           meta:
             pii: quasi
       - name: key_method
-        description: "How the winning record's key was derived."
+        description: "How member_key was derived: email, phone, phone_kana or source_local."
         config:
           meta:
             pii: none
       - name: name_initial
-        description: "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data)."
+        description: "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data)."
         config:
           meta:
             pii: quasi
@@ -2982,76 +2826,36 @@ models:
         config:
           meta:
             pii: quasi
-      - name: first_seen_at
-        description: "Earliest time any product knew this person or household."
+      - name: joined_at
+        description: "When the person joined this product."
         config:
           meta:
             pii: quasi
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
-        config:
-          meta:
-            pii: none
-      - name: n_products
-        description: "In how many products the person appears."
-        config:
-          meta:
-            pii: none
   - name: acc_product_d__dim_household
     description: "Role product_d: access copy of dim_household."
     columns:
+      - name: product
+        description: "Product (A-D)."
+        config:
+          meta:
+            pii: none
       - name: household_key
-        description: "Household key: hash of the payer identity, shared by the payer and the people they pay for."
+        description: "Household key of the product's own records."
         config:
           meta:
             pii: quasi
       - name: n_members
-        description: "Number of people in the household."
+        description: "Members of the household in this product."
         config:
           meta:
             pii: none
       - name: is_family
-        description: "True if more than one person is in the household."
-        config:
-          meta:
-            pii: none
-      - name: in_a
-        description: "The person or household appears in product A."
-        config:
-          meta:
-            pii: none
-      - name: in_b
-        description: "The person or household appears in product B."
-        config:
-          meta:
-            pii: none
-      - name: in_c
-        description: "The person or household appears in product C."
-        config:
-          meta:
-            pii: none
-      - name: in_d
-        description: "The person or household appears in product D."
+        description: "True if this product has more than one member in the household."
         config:
           meta:
             pii: none
       - name: first_seen_at
-        description: "Earliest time any member of the household was seen."
+        description: "When the product first saw a member of the household."
         config:
           meta:
             pii: quasi
@@ -3637,44 +3441,6 @@ models:
             pii: none
       - name: is_active
         description: "True if the contract is running in the latest month of the sheet."
-        config:
-          meta:
-            pii: none
-  - name: acc_product_e__dim_plan
-    description: "Role product_e: access copy of dim_plan."
-    columns:
-      - name: plan_ref
-        description: "Source plan code namespaced by source and generation (for example C26:P100)."
-        config:
-          meta:
-            pii: none
-      - name: source
-        description: "Product whose plan code this is (C or D)."
-        config:
-          meta:
-            pii: none
-      - name: generation
-        description: "C table generation (FY2025, FY2026); empty for D."
-        config:
-          meta:
-            pii: none
-      - name: source_plan_code
-        description: "Plan code as the source writes it."
-        config:
-          meta:
-            pii: none
-      - name: plan_key
-        description: "Unified plan across products and table generations."
-        config:
-          meta:
-            pii: none
-      - name: plan_name
-        description: "Human-readable plan name."
-        config:
-          meta:
-            pii: none
-      - name: billing_period_months
-        description: "Months between invoices for this plan."
         config:
           meta:
             pii: none

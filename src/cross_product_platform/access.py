@@ -66,6 +66,20 @@ class TableRule:
     name: str
     layer: str
     scope: RowScope
+    #: the name the role sees, when it differs from the dbt model (``dim_member_by_product``
+    #: is what product roles see as ``dim_member``)
+    as_name: str = ""
+    #: ``all``, ``cross_product`` (roles that see every product) or ``product`` (product roles)
+    audience: str = "all"
+    #: for product roles: only these products get the table (empty = every product)
+    products: tuple[str, ...] = ()
+    #: only these roles get the table (empty = every role the audience allows)
+    roles: tuple[str, ...] = ()
+
+    @property
+    def logical(self) -> str:
+        """The table name a role sees."""
+        return self.as_name or self.name
 
 
 @dataclass(frozen=True)
@@ -107,6 +121,39 @@ def _scope(raw: dict[str, Any], where: str) -> RowScope:
     return scope
 
 
+def _table_rule(raw: dict[str, Any]) -> TableRule:
+    audience = str(raw.get("audience", "all"))
+    if audience not in {"all", "cross_product", "product"}:
+        raise PolicyError(f"{raw['name']}: audience must be all, cross_product or product")
+    return TableRule(
+        name=str(raw["name"]),
+        layer=str(raw["layer"]),
+        scope=_scope(raw.get("row_scope") or {}, str(raw["name"])),
+        as_name=str(raw.get("as", "")),
+        audience=audience,
+        products=tuple(str(p) for p in raw.get("products", [])),
+        roles=tuple(str(r) for r in raw.get("roles", [])),
+    )
+
+
+def _grants(role: Role, rule: TableRule) -> bool:
+    """Does ``role`` get this table at all?"""
+    if rule.roles and role.name not in rule.roles:
+        return False
+    if rule.audience == "cross_product" and role.products is not None:
+        return False
+    if rule.audience == "product":
+        if role.products is None:
+            return False
+        if rule.products and not set(role.products) & set(rule.products):
+            return False
+    elif (
+        rule.products and role.products is not None and not set(role.products) & set(rule.products)
+    ):
+        return False
+    return True
+
+
 def parse_policy(raw: dict[str, Any]) -> Policy:
     """Validate a parsed YAML document."""
     if raw.get("version") != 1:
@@ -131,10 +178,10 @@ def parse_policy(raw: dict[str, Any]) -> Policy:
         )
     if not roles:
         raise PolicyError("access.yml defines no roles")
-    tables = tuple(
-        TableRule(str(t["name"]), str(t["layer"]), _scope(t.get("row_scope") or {}, str(t["name"])))
-        for t in raw.get("tables", [])
-    )
+    tables = tuple(_table_rule(t) for t in raw.get("tables", []))
+    logical = [(t.logical, t.audience, t.roles, t.products) for t in tables]
+    if len({(n, a, r, p) for n, a, r, p in logical}) != len(logical):
+        raise PolicyError("the same table is listed twice for the same audience")
     generated = raw.get("generated_metrics")
     metric_scope = _scope(generated["row_scope"], "generated_metrics") if generated else None
     return Policy(tuple(roles), tables, metric_scope)
@@ -252,15 +299,15 @@ def _yaml_str(text: str) -> str:
     return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def _exposed(policy: Policy, columns: dict[str, list[ColumnInfo]]) -> list[tuple[str, RowScope]]:
-    tables = [(t.name, t.scope) for t in policy.tables]
+def _exposed(policy: Policy, columns: dict[str, list[ColumnInfo]]) -> list[TableRule]:
+    tables = list(policy.tables)
     if policy.metric_scope is not None:
         for name in sorted(columns):
             if name.startswith(("metric_", "recon_")):
-                tables.append((name, policy.metric_scope))
-    for name, _ in tables:
-        if name not in columns:
-            raise PolicyError(f"table {name!r} has no declared columns in the dbt yml files")
+                tables.append(TableRule(name, "gold", policy.metric_scope))
+    for rule in tables:
+        if rule.name not in columns:
+            raise PolicyError(f"table {rule.name!r} has no declared columns in the dbt yml files")
     return tables
 
 
@@ -279,12 +326,17 @@ def generate_access_files(policy: Policy, columns: dict[str, list[ColumnInfo]]) 
     exposed = _exposed(policy, columns)
     for role in policy.roles:
         granted: dict[str, Any] = {}
-        for table, scope in exposed:
-            ok, where = _row_filter(role, scope)
+        for rule in exposed:
+            if not _grants(role, rule):
+                continue
+            ok, where = _row_filter(role, rule.scope)
             if not ok:
                 continue
-            cols = columns[table]
-            files[f"{ACCESS_DIR}/{model_name(role, table)}.sql"] = _sql(role, table, cols, where)
+            table = rule.logical
+            cols = columns[rule.name]
+            files[f"{ACCESS_DIR}/{model_name(role, table)}.sql"] = _sql(
+                role, rule.name, cols, where
+            )
             visible = _visible(role, cols)
             granted[table] = {
                 "model": model_name(role, table),

@@ -659,7 +659,7 @@
       }
     },
     "product_a": {
-      "description": "Product A rows only; masked; no sensitive columns.",
+      "description": "Only what product A itself knows (its rows",
       "products": [
         "A"
       ],
@@ -669,7 +669,9 @@
         "dim_member": {
           "model": "acc_product_a__dim_member",
           "columns": [
+            "product",
             "member_key",
+            "source_member_id",
             "household_key",
             "key_method",
             "name_initial",
@@ -677,15 +679,12 @@
             "email_domain",
             "phone_last4",
             "birth_date_year",
-            "first_seen_at",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
-            "n_products"
+            "joined_at"
           ],
           "pii": {
+            "product": "none",
             "member_key": "quasi",
+            "source_member_id": "quasi",
             "household_key": "quasi",
             "key_method": "none",
             "name_initial": "quasi",
@@ -693,91 +692,44 @@
             "email_domain": "quasi",
             "phone_last4": "quasi",
             "birth_date_year": "quasi",
-            "first_seen_at": "quasi",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
-            "n_products": "none"
+            "joined_at": "quasi"
           },
           "descriptions": {
-            "member_key": "Canonical member key: the same person in different products has the same key.",
-            "household_key": "Household of the highest-priority record.",
-            "key_method": "How the winning record's key was derived.",
-            "name_initial": "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data).",
+            "product": "Product whose own record this row comes from (A-D).",
+            "member_key": "Canonical member key (same hash as in dim_member; says nothing about other products).",
+            "source_member_id": "The product's own member identifier (D: its derived key).",
+            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
+            "key_method": "How member_key was derived: email, phone, phone_kana or source_local.",
+            "name_initial": "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data).",
             "name_kana_initial": "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data).",
             "email_domain": "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data).",
             "phone_last4": "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data).",
             "birth_date_year": "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data).",
-            "first_seen_at": "Earliest time any product knew this person or household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears."
+            "joined_at": "When the person joined this product."
           }
         },
         "dim_household": {
           "model": "acc_product_a__dim_household",
           "columns": [
+            "product",
             "household_key",
             "n_members",
             "is_family",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
             "first_seen_at"
           ],
           "pii": {
+            "product": "none",
             "household_key": "quasi",
             "n_members": "none",
             "is_family": "none",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
             "first_seen_at": "quasi"
           },
           "descriptions": {
-            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
-            "n_members": "Number of people in the household.",
-            "is_family": "True if more than one person is in the household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "first_seen_at": "Earliest time any member of the household was seen."
-          }
-        },
-        "dim_plan": {
-          "model": "acc_product_a__dim_plan",
-          "columns": [
-            "plan_ref",
-            "source",
-            "generation",
-            "source_plan_code",
-            "plan_key",
-            "plan_name",
-            "billing_period_months"
-          ],
-          "pii": {
-            "plan_ref": "none",
-            "source": "none",
-            "generation": "none",
-            "source_plan_code": "none",
-            "plan_key": "none",
-            "plan_name": "none",
-            "billing_period_months": "none"
-          },
-          "descriptions": {
-            "plan_ref": "Source plan code namespaced by source and generation (for example C26:P100).",
-            "source": "Product whose plan code this is (C or D).",
-            "generation": "C table generation (FY2025, FY2026); empty for D.",
-            "source_plan_code": "Plan code as the source writes it.",
-            "plan_key": "Unified plan across products and table generations.",
-            "plan_name": "Human-readable plan name.",
-            "billing_period_months": "Months between invoices for this plan."
+            "product": "Product (A-D).",
+            "household_key": "Household key of the product's own records.",
+            "n_members": "Members of the household in this product.",
+            "is_family": "True if this product has more than one member in the household.",
+            "first_seen_at": "When the product first saw a member of the household."
           }
         },
         "fct_session": {
@@ -1173,7 +1125,7 @@
       }
     },
     "product_b": {
-      "description": "Product B rows only; masked; no sensitive columns.",
+      "description": "Only what product B itself knows (its rows",
       "products": [
         "B"
       ],
@@ -1183,7 +1135,9 @@
         "dim_member": {
           "model": "acc_product_b__dim_member",
           "columns": [
+            "product",
             "member_key",
+            "source_member_id",
             "household_key",
             "key_method",
             "name_initial",
@@ -1191,15 +1145,12 @@
             "email_domain",
             "phone_last4",
             "birth_date_year",
-            "first_seen_at",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
-            "n_products"
+            "joined_at"
           ],
           "pii": {
+            "product": "none",
             "member_key": "quasi",
+            "source_member_id": "quasi",
             "household_key": "quasi",
             "key_method": "none",
             "name_initial": "quasi",
@@ -1207,91 +1158,44 @@
             "email_domain": "quasi",
             "phone_last4": "quasi",
             "birth_date_year": "quasi",
-            "first_seen_at": "quasi",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
-            "n_products": "none"
+            "joined_at": "quasi"
           },
           "descriptions": {
-            "member_key": "Canonical member key: the same person in different products has the same key.",
-            "household_key": "Household of the highest-priority record.",
-            "key_method": "How the winning record's key was derived.",
-            "name_initial": "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data).",
+            "product": "Product whose own record this row comes from (A-D).",
+            "member_key": "Canonical member key (same hash as in dim_member; says nothing about other products).",
+            "source_member_id": "The product's own member identifier (D: its derived key).",
+            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
+            "key_method": "How member_key was derived: email, phone, phone_kana or source_local.",
+            "name_initial": "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data).",
             "name_kana_initial": "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data).",
             "email_domain": "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data).",
             "phone_last4": "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data).",
             "birth_date_year": "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data).",
-            "first_seen_at": "Earliest time any product knew this person or household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears."
+            "joined_at": "When the person joined this product."
           }
         },
         "dim_household": {
           "model": "acc_product_b__dim_household",
           "columns": [
+            "product",
             "household_key",
             "n_members",
             "is_family",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
             "first_seen_at"
           ],
           "pii": {
+            "product": "none",
             "household_key": "quasi",
             "n_members": "none",
             "is_family": "none",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
             "first_seen_at": "quasi"
           },
           "descriptions": {
-            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
-            "n_members": "Number of people in the household.",
-            "is_family": "True if more than one person is in the household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "first_seen_at": "Earliest time any member of the household was seen."
-          }
-        },
-        "dim_plan": {
-          "model": "acc_product_b__dim_plan",
-          "columns": [
-            "plan_ref",
-            "source",
-            "generation",
-            "source_plan_code",
-            "plan_key",
-            "plan_name",
-            "billing_period_months"
-          ],
-          "pii": {
-            "plan_ref": "none",
-            "source": "none",
-            "generation": "none",
-            "source_plan_code": "none",
-            "plan_key": "none",
-            "plan_name": "none",
-            "billing_period_months": "none"
-          },
-          "descriptions": {
-            "plan_ref": "Source plan code namespaced by source and generation (for example C26:P100).",
-            "source": "Product whose plan code this is (C or D).",
-            "generation": "C table generation (FY2025, FY2026); empty for D.",
-            "source_plan_code": "Plan code as the source writes it.",
-            "plan_key": "Unified plan across products and table generations.",
-            "plan_name": "Human-readable plan name.",
-            "billing_period_months": "Months between invoices for this plan."
+            "product": "Product (A-D).",
+            "household_key": "Household key of the product's own records.",
+            "n_members": "Members of the household in this product.",
+            "is_family": "True if this product has more than one member in the household.",
+            "first_seen_at": "When the product first saw a member of the household."
           }
         },
         "fct_session": {
@@ -1732,7 +1636,7 @@
       }
     },
     "product_c": {
-      "description": "Product C rows only; masked; no sensitive columns.",
+      "description": "Only what product C itself knows (its rows",
       "products": [
         "C"
       ],
@@ -1742,7 +1646,9 @@
         "dim_member": {
           "model": "acc_product_c__dim_member",
           "columns": [
+            "product",
             "member_key",
+            "source_member_id",
             "household_key",
             "key_method",
             "name_initial",
@@ -1750,15 +1656,12 @@
             "email_domain",
             "phone_last4",
             "birth_date_year",
-            "first_seen_at",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
-            "n_products"
+            "joined_at"
           ],
           "pii": {
+            "product": "none",
             "member_key": "quasi",
+            "source_member_id": "quasi",
             "household_key": "quasi",
             "key_method": "none",
             "name_initial": "quasi",
@@ -1766,61 +1669,44 @@
             "email_domain": "quasi",
             "phone_last4": "quasi",
             "birth_date_year": "quasi",
-            "first_seen_at": "quasi",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
-            "n_products": "none"
+            "joined_at": "quasi"
           },
           "descriptions": {
-            "member_key": "Canonical member key: the same person in different products has the same key.",
-            "household_key": "Household of the highest-priority record.",
-            "key_method": "How the winning record's key was derived.",
-            "name_initial": "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data).",
+            "product": "Product whose own record this row comes from (A-D).",
+            "member_key": "Canonical member key (same hash as in dim_member; says nothing about other products).",
+            "source_member_id": "The product's own member identifier (D: its derived key).",
+            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
+            "key_method": "How member_key was derived: email, phone, phone_kana or source_local.",
+            "name_initial": "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data).",
             "name_kana_initial": "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data).",
             "email_domain": "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data).",
             "phone_last4": "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data).",
             "birth_date_year": "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data).",
-            "first_seen_at": "Earliest time any product knew this person or household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears."
+            "joined_at": "When the person joined this product."
           }
         },
         "dim_household": {
           "model": "acc_product_c__dim_household",
           "columns": [
+            "product",
             "household_key",
             "n_members",
             "is_family",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
             "first_seen_at"
           ],
           "pii": {
+            "product": "none",
             "household_key": "quasi",
             "n_members": "none",
             "is_family": "none",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
             "first_seen_at": "quasi"
           },
           "descriptions": {
-            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
-            "n_members": "Number of people in the household.",
-            "is_family": "True if more than one person is in the household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "first_seen_at": "Earliest time any member of the household was seen."
+            "product": "Product (A-D).",
+            "household_key": "Household key of the product's own records.",
+            "n_members": "Members of the household in this product.",
+            "is_family": "True if this product has more than one member in the household.",
+            "first_seen_at": "When the product first saw a member of the household."
           }
         },
         "dim_plan": {
@@ -2303,7 +2189,7 @@
       }
     },
     "product_d": {
-      "description": "Product D rows only; masked; no sensitive columns.",
+      "description": "Only what product D itself knows (its rows",
       "products": [
         "D"
       ],
@@ -2313,7 +2199,9 @@
         "dim_member": {
           "model": "acc_product_d__dim_member",
           "columns": [
+            "product",
             "member_key",
+            "source_member_id",
             "household_key",
             "key_method",
             "name_initial",
@@ -2321,15 +2209,12 @@
             "email_domain",
             "phone_last4",
             "birth_date_year",
-            "first_seen_at",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
-            "n_products"
+            "joined_at"
           ],
           "pii": {
+            "product": "none",
             "member_key": "quasi",
+            "source_member_id": "quasi",
             "household_key": "quasi",
             "key_method": "none",
             "name_initial": "quasi",
@@ -2337,61 +2222,44 @@
             "email_domain": "quasi",
             "phone_last4": "quasi",
             "birth_date_year": "quasi",
-            "first_seen_at": "quasi",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
-            "n_products": "none"
+            "joined_at": "quasi"
           },
           "descriptions": {
-            "member_key": "Canonical member key: the same person in different products has the same key.",
-            "household_key": "Household of the highest-priority record.",
-            "key_method": "How the winning record's key was derived.",
-            "name_initial": "Masked: only the first character of the original column. Full name from the highest-priority product (direct personal data).",
+            "product": "Product whose own record this row comes from (A-D).",
+            "member_key": "Canonical member key (same hash as in dim_member; says nothing about other products).",
+            "source_member_id": "The product's own member identifier (D: its derived key).",
+            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
+            "key_method": "How member_key was derived: email, phone, phone_kana or source_local.",
+            "name_initial": "Masked: only the first character of the original column. Full name as recorded by the highest-priority product (direct personal data).",
             "name_kana_initial": "Masked: only the first character of the original column. Name in kana as recorded by the highest-priority product (direct personal data).",
             "email_domain": "Masked: only the domain part of the original column. E-mail address as recorded by the highest-priority product (direct personal data).",
             "phone_last4": "Masked: only the last four digits of the original column. Phone number as recorded by the highest-priority product (direct personal data).",
             "birth_date_year": "Masked: only the year of the original column. Date of birth as recorded by the source (direct personal data).",
-            "first_seen_at": "Earliest time any product knew this person or household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "n_products": "In how many products the person appears."
+            "joined_at": "When the person joined this product."
           }
         },
         "dim_household": {
           "model": "acc_product_d__dim_household",
           "columns": [
+            "product",
             "household_key",
             "n_members",
             "is_family",
-            "in_a",
-            "in_b",
-            "in_c",
-            "in_d",
             "first_seen_at"
           ],
           "pii": {
+            "product": "none",
             "household_key": "quasi",
             "n_members": "none",
             "is_family": "none",
-            "in_a": "none",
-            "in_b": "none",
-            "in_c": "none",
-            "in_d": "none",
             "first_seen_at": "quasi"
           },
           "descriptions": {
-            "household_key": "Household key: hash of the payer identity, shared by the payer and the people they pay for.",
-            "n_members": "Number of people in the household.",
-            "is_family": "True if more than one person is in the household.",
-            "in_a": "The person or household appears in product A.",
-            "in_b": "The person or household appears in product B.",
-            "in_c": "The person or household appears in product C.",
-            "in_d": "The person or household appears in product D.",
-            "first_seen_at": "Earliest time any member of the household was seen."
+            "product": "Product (A-D).",
+            "household_key": "Household key of the product's own records.",
+            "n_members": "Members of the household in this product.",
+            "is_family": "True if this product has more than one member in the household.",
+            "first_seen_at": "When the product first saw a member of the household."
           }
         },
         "dim_plan": {
@@ -2817,7 +2685,7 @@
       }
     },
     "product_e": {
-      "description": "Product E rows only; masked; no sensitive columns.",
+      "description": "Only what product E itself knows (its rows",
       "products": [
         "E"
       ],
@@ -2861,36 +2729,6 @@
             "last_month": "Last month the company appears in the sales sheet.",
             "status": "active or cancelled (mapped from the sheet's wording).",
             "is_active": "True if the contract is running in the latest month of the sheet."
-          }
-        },
-        "dim_plan": {
-          "model": "acc_product_e__dim_plan",
-          "columns": [
-            "plan_ref",
-            "source",
-            "generation",
-            "source_plan_code",
-            "plan_key",
-            "plan_name",
-            "billing_period_months"
-          ],
-          "pii": {
-            "plan_ref": "none",
-            "source": "none",
-            "generation": "none",
-            "source_plan_code": "none",
-            "plan_key": "none",
-            "plan_name": "none",
-            "billing_period_months": "none"
-          },
-          "descriptions": {
-            "plan_ref": "Source plan code namespaced by source and generation (for example C26:P100).",
-            "source": "Product whose plan code this is (C or D).",
-            "generation": "C table generation (FY2025, FY2026); empty for D.",
-            "source_plan_code": "Plan code as the source writes it.",
-            "plan_key": "Unified plan across products and table generations.",
-            "plan_name": "Human-readable plan name.",
-            "billing_period_months": "Months between invoices for this plan."
           }
         },
         "fct_session": {

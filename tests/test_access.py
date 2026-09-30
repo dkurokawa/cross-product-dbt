@@ -80,7 +80,8 @@ def test_privacy_officer_gets_everything_unmasked(files: dict[str, str]) -> None
 
 
 def test_product_roles_are_row_scoped(files: dict[str, str]) -> None:
-    assert files["dbt/models/access/acc_product_a__dim_member.sql"].endswith("where in_a\n")
+    member = files["dbt/models/access/acc_product_a__dim_member.sql"]
+    assert member.endswith("from {{ ref('dim_member_by_product') }}\nwhere product = 'A'\n")
     assert files["dbt/models/access/acc_product_b__fct_payment.sql"].endswith(
         "where source = 'B'\n"
     )
@@ -94,8 +95,9 @@ def test_product_roles_are_row_scoped(files: dict[str, str]) -> None:
     assert "dbt/models/access/acc_product_e__dim_account.sql" in files
     # E has no members, so no member flag to filter by
     assert "dbt/models/access/acc_product_e__dim_member.sql" not in files
-    # reference data is visible to everybody, unfiltered
-    assert files["dbt/models/access/acc_product_a__dim_plan.sql"].count("where") == 0
+    # plan codes exist only for C and D, so only those product roles get (their own) codes
+    assert "dbt/models/access/acc_product_a__dim_plan.sql" not in files
+    assert "dbt/models/access/acc_product_c__dim_plan.sql" in files
 
 
 def test_allowlist_lists_tables_and_columns_per_role(files: dict[str, str]) -> None:
@@ -175,7 +177,7 @@ def test_manifest_check_flags_sensitive_columns_in_a_restricted_role(files: dict
         (lambda r: r["roles"]["analyst"].update(sensitive="maybe"), "sensitive"),
         (lambda r: r["roles"]["analyst"].update(direct="maybe"), "direct"),
         (lambda r: r["tables"][0]["row_scope"].update(kind="teleport"), "unknown row_scope"),
-        (lambda r: r["tables"][0]["row_scope"].update(columns={}), "missing its parameters"),
+        (lambda r: r["tables"][1]["row_scope"].update(column=""), "missing its parameters"),
     ],
 )
 def test_policy_validation(mutate: Any, message: str) -> None:
@@ -238,3 +240,43 @@ def test_cli_generate_and_check(tmp_path: Path, capsys: pytest.CaptureFixture[st
     assert main(["access", "check", *args, "--manifest", str(manifest)]) == 1
     assert "is sensitive in a restricted role" in capsys.readouterr().err
     assert main(["access", "check", "--policy", str(tmp_path / "nope.yml"), *args[:2]]) == 2
+
+
+def test_product_roles_get_only_their_products_own_member_and_household_tables(
+    files: dict[str, str],
+) -> None:
+    """A product role must not receive cross-product columns or another product's coalesced data."""
+    allow = json.loads(files["policies/gateway_allowlist.json"])
+    for role in ("product_a", "product_b", "product_c", "product_d"):
+        tables = allow["roles"][role]["tables"]
+        for name in ("dim_member", "dim_household"):
+            assert tables[name]["model"] == f"acc_{role}__{name}"
+            columns = set(tables[name]["columns"])
+            assert not {"in_a", "in_b", "in_c", "in_d", "n_products"} & columns, (role, name)
+            sql = files[f"dbt/models/access/acc_{role}__{name}.sql"]
+            assert "_by_product" in sql and "where product = " in sql
+    for role in ("analyst", "privacy_officer"):
+        columns = set(allow["roles"][role]["tables"]["dim_member"]["columns"])
+        assert {"in_a", "in_b", "n_products"} <= columns
+
+
+def test_reference_tables_are_scoped_to_the_products_own_codes(files: dict[str, str]) -> None:
+    allow = json.loads(files["policies/gateway_allowlist.json"])
+    roles = allow["roles"]
+    assert "dim_plan" not in roles["product_a"]["tables"]
+    assert "dim_plan" not in roles["product_b"]["tables"]
+    assert "dim_plan" not in roles["product_e"]["tables"]
+    assert files["dbt/models/access/acc_product_c__dim_plan.sql"].endswith("where source = 'C'\n")
+    assert files["dbt/models/access/acc_product_d__dim_plan.sql"].endswith("where source = 'D'\n")
+    assert "where" not in files["dbt/models/access/acc_analyst__dim_plan.sql"]
+
+
+def test_audience_products_and_roles_options_are_validated() -> None:
+    doc = raw()
+    doc["tables"][0]["audience"] = "everyone"
+    with pytest.raises(PolicyError, match="audience"):
+        parse_policy(doc)
+    doc = raw()
+    doc["tables"].append(dict(doc["tables"][0]))
+    with pytest.raises(PolicyError, match="twice"):
+        parse_policy(doc)

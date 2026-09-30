@@ -22,27 +22,35 @@ roles:
     products: all
     sensitive: exclude
     direct: mask
-  product_a: {description: Product A rows only; masked; no sensitive columns., products: [A], sensitive: exclude, direct: mask}
-  product_b: {description: Product B rows only; masked; no sensitive columns., products: [B], sensitive: exclude, direct: mask}
-  product_c: {description: Product C rows only; masked; no sensitive columns., products: [C], sensitive: exclude, direct: mask}
-  product_d: {description: Product D rows only; masked; no sensitive columns., products: [D], sensitive: exclude, direct: mask}
-  product_e: {description: Product E rows only; masked; no sensitive columns., products: [E], sensitive: exclude, direct: mask}
+  product_a: {description: Only what product A itself knows (its rows, its own attributes); masked; no sensitive columns., products: [A], sensitive: exclude, direct: mask}
+  product_b: {description: Only what product B itself knows (its rows, its own attributes); masked; no sensitive columns., products: [B], sensitive: exclude, direct: mask}
+  product_c: {description: Only what product C itself knows (its rows, its own attributes); masked; no sensitive columns., products: [C], sensitive: exclude, direct: mask}
+  product_d: {description: Only what product D itself knows (its rows, its own attributes); masked; no sensitive columns., products: [D], sensitive: exclude, direct: mask}
+  product_e: {description: Only what product E itself knows (its rows, its own attributes); masked; no sensitive columns., products: [E], sensitive: exclude, direct: mask}
   privacy_officer:
     description: Audit role. Everything, including sensitive columns and unmasked personal data.
     products: all
     sensitive: include
     direct: clear
 
+# Optional per table: `as` (the name the role sees), `audience` (all | cross_product | product),
+# `products` (only these product roles), `roles` (only these roles).
 # row_scope decides what a product role may see of a table:
-#   none    no product dimension (reference data): every role sees all rows
+#   none    no product dimension: every role that gets the table sees all its rows
 #   flags   one boolean column per product (`columns`): rows where the role's flag is true
 #   column  a column that holds the product: rows where it equals the role's product
 #   fixed   the table belongs to one product: only that product's role gets it
 tables:
-  - {name: dim_member, layer: silver, row_scope: {kind: flags, columns: {A: in_a, B: in_b, C: in_c, D: in_d}}}
-  - {name: dim_household, layer: silver, row_scope: {kind: flags, columns: {A: in_a, B: in_b, C: in_c, D: in_d}}}
+  # The cross-product person and household tables go only to roles that see every product.
+  # Product roles get, under the same names, tables built from their own product's records alone
+  # (no attribute coalesced from another product, no cross-product flags or counts).
+  - {name: dim_member, layer: silver, audience: cross_product, row_scope: {kind: none}}
+  - {name: dim_member_by_product, as: dim_member, layer: silver, audience: product, products: [A, B, C, D], row_scope: {kind: column, column: product}}
+  - {name: dim_household, layer: silver, audience: cross_product, row_scope: {kind: none}}
+  - {name: dim_household_by_product, as: dim_household, layer: silver, audience: product, products: [A, B, C, D], row_scope: {kind: column, column: product}}
   - {name: dim_account, layer: silver, row_scope: {kind: fixed, product: E}}
-  - {name: dim_plan, layer: silver, row_scope: {kind: none}}
+  # Plan codes exist only for C and D: those product roles get their own codes, the others none.
+  - {name: dim_plan, layer: silver, products: [C, D], row_scope: {kind: column, column: source}}
   - {name: fct_session, layer: silver, row_scope: {kind: column, column: source}}
   - {name: fct_booking, layer: silver, row_scope: {kind: fixed, product: B}}
   - {name: fct_payment, layer: silver, row_scope: {kind: column, column: source}}
