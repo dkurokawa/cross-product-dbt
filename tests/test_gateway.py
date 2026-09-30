@@ -298,3 +298,65 @@ def test_cli_query_and_build_roles(env: Env, capsys: pytest.CaptureFixture[str])
         "--allowlist", str(env.allowlist_path), "--out-dir", str(env.warehouse_dir),
     ]) == 0  # fmt: skip
     assert "analyst: 3 tables" in capsys.readouterr().out
+
+
+DYNAMIC = [
+    "select columns('health.*') from dim_member",
+    "select columns(*) from dim_member",
+    "select min(columns('h.*')) from dim_member",
+    "select COLUMNS(c -> c like 'h%') from dim_member",
+    "select #2 from dim_member",
+    "select row(dim_member.*) from dim_member",
+    "select to_json(dim_member.*) from dim_member",
+]
+
+
+@pytest.mark.parametrize("sql", DYNAMIC)
+def test_dynamic_column_expansion_is_denied_and_audited_even_for_the_privacy_officer(
+    env: Env, sql: str
+) -> None:
+    """COLUMNS(...) used to return health_notes while the audit log recorded no columns at all."""
+    with pytest.raises(QueryDeniedError):
+        env.gateway("privacy_officer", "auditor").query(sql)
+    assert env.audit("query_executed") == []
+    assert len(env.audit("query_denied")) == 1
+
+
+def test_select_star_records_the_sensitive_column_it_expands_to(env: Env) -> None:
+    env.gateway("privacy_officer", "auditor").query("select * from dim_member limit 1")
+    (event,) = env.audit("query_executed")
+    assert event["sensitive_columns"] == ["health_notes"] and event["touched_sensitive"] is True
+    assert event["referenced_columns"] == [
+        "dim_member.health_notes", "dim_member.member_key", "dim_member.n_products",
+    ]  # fmt: skip
+
+
+def test_qualified_star_exclude_and_replace_are_expanded_exactly(env: Env) -> None:
+    gateway = env.gateway("privacy_officer", "auditor")
+    gateway.query("select m.* from dim_member m")
+    gateway.query("select * exclude (health_notes) from dim_member")
+    gateway.query("select * replace (upper(health_notes) as health_notes) from dim_member")
+    first, second, third = env.audit("query_executed")
+    assert first["sensitive_columns"] == ["health_notes"]
+    assert second["sensitive_columns"] == [] and second["touched_sensitive"] is False
+    assert second["referenced_columns"] == ["dim_member.member_key", "dim_member.n_products"]
+    assert third["sensitive_columns"] == ["health_notes"]
+
+
+def test_the_columns_come_from_the_role_database_not_from_the_allowlist(env: Env) -> None:
+    db = role_db_path(env.warehouse_dir, "privacy_officer")
+    con = duckdb.connect(str(db))
+    con.execute("alter table dim_member add column extra_secret varchar")
+    con.close()
+    env.gateway("privacy_officer", "auditor").query("select * from dim_member")
+    (event,) = env.audit("query_executed")
+    assert "dim_member.extra_secret" in event["referenced_columns"]
+
+
+def test_a_role_database_that_lacks_an_allowlisted_table_is_refused(env: Env) -> None:
+    db = role_db_path(env.warehouse_dir, "analyst")
+    con = duckdb.connect(str(db))
+    con.execute("drop table fct_payment")
+    con.close()
+    with pytest.raises(GatewayError, match="lacks allowlisted tables"):
+        env.gateway("analyst")

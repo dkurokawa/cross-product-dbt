@@ -104,6 +104,30 @@ def _function_name(fn: exp.Func) -> str:
     return (fn.name if isinstance(fn, exp.Anonymous) else fn.sql_name()).lower()
 
 
+def _star_is_plain(star: exp.Star) -> bool:
+    """A ``*`` may only be a projection (``*``, ``t.*``) or the argument of count()."""
+    parent = star.parent
+    if isinstance(parent, exp.Select | exp.Count):
+        return True
+    return isinstance(parent, exp.Column) and isinstance(parent.parent, exp.Select)
+
+
+def role_schema(db_path: Path) -> dict[str, list[str]]:
+    """The tables and columns that are really in a role's database file."""
+    con = duckdb.connect(str(db_path), read_only=True)
+    try:
+        rows = con.execute(
+            "select table_name, column_name from information_schema.columns "
+            "where table_schema = 'main' order by table_name, ordinal_position"
+        ).fetchall()
+    finally:
+        con.close()
+    schema: dict[str, list[str]] = {}
+    for table, column in rows:
+        schema.setdefault(str(table), []).append(str(column))
+    return schema
+
+
 def analyze(
     sql: str,
     tables: dict[str, list[str]],
@@ -152,6 +176,12 @@ def analyze(
                 raise deny(f"function {name} is not allowed")
         if isinstance(node, exp.Table) and not isinstance(node.this, exp.Identifier):
             raise deny("table functions are not allowed")
+        if isinstance(node, exp.Columns | exp.PositionalColumn):
+            raise deny("dynamic column selection (COLUMNS, #n) is not allowed")
+        if isinstance(node, exp.Placeholder | exp.Parameter):
+            raise deny("parameters are not allowed")
+        if isinstance(node, exp.Star) and not _star_is_plain(node):
+            raise deny("* is only allowed as a projection (or inside count)")
 
     ctes = {cte.alias for cte in tree.find_all(exp.CTE)}
     seen: list[str] = []
@@ -172,6 +202,10 @@ def analyze(
         )
     except (OptimizeError, SqlglotError) as err:
         raise deny(f"column check failed: {err}", seen) from None
+    if any(
+        isinstance(star.parent, exp.Select | exp.Column) for star in qualified.find_all(exp.Star)
+    ):
+        raise deny("a * could not be expanded against the role's tables", seen)
     aliases = {t.alias_or_name: t.name for t in qualified.find_all(exp.Table)}
     columns = sorted(
         {
@@ -180,7 +214,7 @@ def analyze(
             if c.table in aliases and aliases[c.table] in tables
         }
     )
-    sensitive = sorted({c.split(".")[-1] for c in columns} & sensitive_names | set(raw_sensitive))
+    sensitive = sorted({c.split(".")[-1] for c in columns} & sensitive_names)
     inner = str(tree.sql(dialect=DIALECT))
     return Analysis(
         normalized,
@@ -234,13 +268,20 @@ class Gateway:
             raise GatewayError("a principal must be declared")
         self.role = role
         self.principal = principal
-        self.tables: dict[str, list[str]] = {
-            name: list(spec["columns"]) for name, spec in allowlist["roles"][role]["tables"].items()
-        }
         self.sensitive_names = set(allowlist.get("sensitive_columns", []))
         self.db_path = role_db_path(warehouse_dir, role)
         if not self.db_path.exists():
             raise GatewayError(f"database file for role {role} not found; run `make roles`")
+        # The columns come from the role's database file itself (what is really there), so
+        # `*`, `t.*`, EXCLUDE and REPLACE are expanded against the truth, not against a list.
+        actual = role_schema(self.db_path)
+        granted = allowlist["roles"][role]["tables"]
+        missing = sorted(set(granted) - set(actual))
+        if missing:
+            raise GatewayError(
+                f"role database lacks allowlisted tables {missing}; run `make roles`"
+            )
+        self.tables: dict[str, list[str]] = {name: actual[name] for name in granted}
         self.audit_root = audit_root
 
     def query(self, sql: str, limit: int = MAX_LIMIT) -> QueryResult:
