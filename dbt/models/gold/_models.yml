@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: identity_quality
+    description: >
+      Members per identification method and source, including the unmatched (source_local)
+      and the number of ambiguous phone+kana links.
+    columns:
+      - name: source
+        data_tests: [not_null]
+      - name: category
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [email, phone, phone_kana, source_local, ambiguous_link]
+      - name: n
+        data_tests: [not_null]

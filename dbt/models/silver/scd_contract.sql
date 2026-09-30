@@ -2,7 +2,9 @@
 -- * a log record that changes none of the tracked columns (C often re-sends the same row) is
 --   not a new version;
 -- * valid_to is the next version's valid_from (NULL for the current version);
--- * a delete (op = D) is its own, final version with is_deleted = true.
+-- * a delete (op = D) is its own version with is_deleted = true;
+-- * a record that follows a delete always starts a new version, even if every tracked
+--   column equals the deleted one (a re-insert must not be swallowed by the hash comparison).
 with log as (
 
     select
@@ -19,7 +21,10 @@ compared as (
         *,
         lag(attribute_hash)
             over (partition by contract_id order by changed_at, lsn)
-            as previous_hash
+            as previous_hash,
+        lag(op)
+            over (partition by contract_id order by changed_at, lsn)
+            as previous_op
     from log
 
 ),
@@ -35,6 +40,7 @@ versions as (
         previous_hash is null
         or attribute_hash <> previous_hash
         or op = 'D'
+        or previous_op = 'D'
 
 )
 

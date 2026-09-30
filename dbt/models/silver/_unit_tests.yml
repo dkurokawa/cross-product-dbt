@@ -1,0 +1,69 @@
+version: 2
+
+# Unit tests run on hand-written rows, independent of the generator: they pin down rules
+# the synthetic data may never exercise.
+
+unit_tests:
+  - name: link_key_shared_by_two_email_identities_is_flagged
+    description: >
+      The same phone + kana under two different e-mail keys is merged (smallest key wins) but
+      counted as ambiguous.
+    model: int_link_map
+    given:
+      - input: ref('int_member_source_rows')
+        rows:
+          - {link_key: L1, key_method: email, member_key: K2}
+          - {link_key: L1, key_method: email, member_key: K1}
+          - {link_key: L1, key_method: phone_kana, member_key: L1}
+          - {link_key: L2, key_method: email, member_key: K3}
+          - {link_key: L2, key_method: phone_kana, member_key: L2}
+    expect:
+      rows:
+        - {link_key: L1, email_member_key: K1, n_email_keys: 2}
+        - {link_key: L2, email_member_key: K3, n_email_keys: 1}
+
+  - name: xref_marks_records_of_an_ambiguous_link
+    model: xref_member
+    given:
+      - input: ref('int_member_source_rows')
+        rows:
+          - {source: A, source_member_id: a1, member_key: K2, link_key: L1}
+          - {source: C, source_member_id: c1, member_key: K1, link_key: L1}
+          - {source: D, source_member_id: L1, member_key: L1, link_key: L1}
+          - {source: A, source_member_id: a3, member_key: K3, link_key: L2}
+          - {source: A, source_member_id: child, member_key: K9, link_key: null}
+      - input: ref('int_link_map')
+        rows:
+          - {link_key: L1, email_member_key: K1, n_email_keys: 2}
+          - {link_key: L2, email_member_key: K3, n_email_keys: 1}
+    expect:
+      rows:
+        - {source: A, source_member_id: a1, source_member_key: K2, member_key: K1, link_ambiguous: true}
+        - {source: C, source_member_id: c1, source_member_key: K1, member_key: K1, link_ambiguous: true}
+        - {source: D, source_member_id: L1, source_member_key: L1, member_key: K1, link_ambiguous: true}
+        - {source: A, source_member_id: a3, source_member_key: K3, member_key: K3, link_ambiguous: false}
+        - {source: A, source_member_id: child, source_member_key: K9, member_key: K9, link_ambiguous: false}
+
+  - name: scd_reinsert_after_delete_starts_a_new_version
+    description: >
+      Insert, delete, then insert again with identical attributes: three versions, the delete
+      is closed by the re-insert, and the contract is not deleted forever.
+    model: scd_contract
+    given:
+      - input: ref('int_c_contract_log')
+        rows:
+          - {generation: FY2026, op: I, changed_at: "2026-04-01 00:00:00+00", lsn: 1, contract_id: K1, member_id: 7, plan_ref: "C26:P100", monthly_fee_tax_incl: 7150, monthly_fee_ex_tax: 6500, start_date: "2026-04-01", end_date: null, payer_member_id: null, status: active}
+          - {generation: FY2026, op: U, changed_at: "2026-04-02 00:00:00+00", lsn: 2, contract_id: K1, member_id: 7, plan_ref: "C26:P100", monthly_fee_tax_incl: 7150, monthly_fee_ex_tax: 6500, start_date: "2026-04-01", end_date: null, payer_member_id: null, status: active}
+          - {generation: FY2026, op: D, changed_at: "2026-04-03 00:00:00+00", lsn: 3, contract_id: K1, member_id: 7, plan_ref: "C26:P100", monthly_fee_tax_incl: 7150, monthly_fee_ex_tax: 6500, start_date: "2026-04-01", end_date: null, payer_member_id: null, status: active}
+          - {generation: FY2026, op: I, changed_at: "2026-04-04 00:00:00+00", lsn: 4, contract_id: K1, member_id: 7, plan_ref: "C26:P100", monthly_fee_tax_incl: 7150, monthly_fee_ex_tax: 6500, start_date: "2026-04-01", end_date: null, payer_member_id: null, status: active}
+      - input: ref('dim_plan')
+        rows:
+          - {plan_ref: "C26:P100", plan_key: standard_monthly}
+      - input: ref('xref_member')
+        rows:
+          - {source: C, source_member_id: "7", member_key: K7}
+    expect:
+      rows:
+        - {contract_id: K1, valid_from: "2026-04-01 00:00:00+00", valid_to: "2026-04-03 00:00:00+00", is_current: false, is_deleted: false}
+        - {contract_id: K1, valid_from: "2026-04-03 00:00:00+00", valid_to: "2026-04-04 00:00:00+00", is_current: false, is_deleted: true}
+        - {contract_id: K1, valid_from: "2026-04-04 00:00:00+00", valid_to: null, is_current: true, is_deleted: false}
