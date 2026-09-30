@@ -113,3 +113,47 @@
 
 {# A list column as comma-separated text. #}
 {% macro list_to_text(expr) %}array_to_string({{ expr }}, ','){% endmacro %}
+
+{#
+  Gateway audit events (eventlake). They exist only after the gateway has answered a query, so a
+  fresh clone has none. On DuckDB, when no event file exists yet, the audit models read an
+  empty relation with the right column types instead of failing; nothing is invented. Other
+  warehouses read the source table as usual.
+#}
+{% macro audit_events(name) %}
+    {{ return(adapter.dispatch('audit_events', 'platform')(name)) }}
+{% endmacro %}
+
+{% macro default__audit_events(name) %}{{ source('audit', name) }}{% endmacro %}
+
+{% macro duckdb__audit_events(name) %}
+    {%- set has_events = false -%}
+    {#- a unit test supplies its own rows for the source -#}
+    {%- if execute and model.resource_type != 'unit_test' -%}
+        {%- set root = env_var('PLATFORM_AUDIT_ROOT', 'build/audit') -%}
+        {%- set found = run_query("select count(*) from glob('" ~ root ~ "/" ~ name ~ "/dt=*/part-*.parquet')") -%}
+        {%- set has_events = found.columns[0].values()[0] > 0 -%}
+    {%- endif -%}
+    {%- if has_events or not execute or model.resource_type == 'unit_test' -%}
+        {{ source('audit', name) }}
+    {%- else -%}
+        (
+            select
+                cast(null as varchar) as event_id,
+                cast(null as timestamptz) as occurred_at,
+                cast(null as timestamptz) as recorded_at,
+                cast(null as varchar) as filename,
+                cast(null as varchar) as principal,
+                cast(null as varchar) as role,
+                cast(null as varchar) as sql_hash,
+                cast(null as varchar) as sql_normalized,
+                cast(null as varchar[]) as referenced_tables,
+                cast(null as varchar[]) as referenced_columns,
+                cast(null as varchar[]) as sensitive_columns,
+                cast(null as boolean) as touched_sensitive,
+                cast(null as bigint) as row_count,
+                cast(null as varchar) as deny_reason
+            where false
+        )
+    {%- endif -%}
+{% endmacro %}

@@ -11,7 +11,7 @@ with ranked as (
             partition by event_id
             order by recorded_at asc, filename asc
         ) as dedup_rank
-    from {{ source('audit', 'query_executed') }}
+    from {{ audit_events('query_executed') }}
 
 )
 

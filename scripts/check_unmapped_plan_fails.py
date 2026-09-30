@@ -28,8 +28,7 @@ def main() -> int:
     env = {**os.environ, "PLATFORM_LANDING_ROOT": str(lake), "PLATFORM_WAREHOUSE": str(warehouse)}
     subprocess.run(
         [sys.executable, "-m", "dbt.cli.main", "build",
-         "--project-dir", str(ROOT / "dbt"), "--profiles-dir", str(ROOT / "dbt"),
-         "--exclude", "tag:audit"],
+         "--project-dir", str(ROOT / "dbt"), "--profiles-dir", str(ROOT / "dbt")],
         cwd=ROOT, env=env, check=False, capture_output=True,
     )  # fmt: skip
     results = json.loads((ROOT / "dbt" / "target" / "run_results.json").read_text("utf-8"))

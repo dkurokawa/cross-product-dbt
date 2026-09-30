@@ -26,17 +26,19 @@ ingest:
 deps:
 	$(DBT) deps $(DBT_ARGS)
 
-# The audit models read the gateway's audit events, which exist only after the gateway ran
-# (target `audit`), so the first pass leaves them out.
+# A plain `dbt build` works on a fresh clone: with no gateway events yet, the audit models read an
+# empty, correctly typed relation (macro audit_events). They are built again by `make audit`
+# once the gateway has produced events.
 dbt-build:
 	@mkdir -p $(dir $(WAREHOUSE))
-	$(DBT) build $(DBT_ARGS) --exclude tag:audit
+	$(DBT) build $(DBT_ARGS)
 
 # F6 layer 4: one database file per role, holding only that role's access tables.
 roles:
 	uv run platform build-roles --warehouse $(WAREHOUSE) --out-dir $(dir $(WAREHOUSE))
 
-# Sample gateway calls -> audit lake -> dbt audit models -> assertions on gold.audit_access_log.
+# Sample gateway calls -> audit lake -> rebuild the audit models -> assertions on
+# gold.audit_access_log.
 audit:
 	uv run python scripts/audit_demo.py write
 	$(DBT) build $(DBT_ARGS) --select tag:audit
@@ -50,7 +52,7 @@ mcp-smoke:
 	uv run python scripts/mcp_smoke.py
 
 freshness:
-	$(DBT) source freshness $(DBT_ARGS) --exclude source:audit
+	$(DBT) source freshness $(DBT_ARGS)
 
 # The catalog (actual column lists) is what the metric-name guard scans.
 docs:

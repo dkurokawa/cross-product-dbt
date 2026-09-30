@@ -43,6 +43,7 @@ mask_phone_last4 = {% macro mask_phone_last4(expr) %}right({{ expr }}, 4){% endm
 mask_birth_year = {% macro mask_birth_year(expr) %}cast(extract(year from {{ expr }}) as bigint){% endmacro %}
 mask_initial = {% macro mask_initial(expr) %}left({{ expr }}, 1) || '***'{% endmacro %}
 list_to_text = {% macro list_to_text(expr) %}array_to_string({{ expr }}, ','){% endmacro %}
+audit_events = {% macro audit_events(name) %}audit_{{ name }}{% endmacro %}
 row_hash = {% macro row_hash(columns) %}md5(concat({{ columns | join(', ') }})){% endmacro %}
 
 # `source`, `name`, `value`, `file`, `partition_date`... are ordinary column names in every
