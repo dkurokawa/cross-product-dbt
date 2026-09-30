@@ -1,0 +1,2 @@
+# Gitleaks false positive: `limit=MAX_LIMIT + 1` in a test matched the generic-api-key rule.
+2218942695700490e44069a1134822d9ff57d2b5:tests/test_gateway.py:generic-api-key:110
