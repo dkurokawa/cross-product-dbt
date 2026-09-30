@@ -84,3 +84,25 @@ unit_tests:
       rows:
         - {source: A, source_member_id: a1}
         - {source: C, source_member_id: c2}
+
+  - name: scd_owner_correction_is_a_new_version
+    description: >
+      An update that changes only the contract holder (member_id) is a real change: two versions,
+      not one swallowed by the hash comparison.
+    model: scd_contract
+    given:
+      - input: ref('int_c_contract_log')
+        rows:
+          - {generation: FY2026, op: I, changed_at: "2026-04-01 00:00:00+00", lsn: 1, contract_id: K1, member_id: 7, plan_ref: "C26:P100", monthly_fee_tax_incl: 7150, monthly_fee_ex_tax: 6500, start_date: "2026-04-01", end_date: null, payer_member_id: null, status: active}
+          - {generation: FY2026, op: U, changed_at: "2026-04-02 00:00:00+00", lsn: 2, contract_id: K1, member_id: 8, plan_ref: "C26:P100", monthly_fee_tax_incl: 7150, monthly_fee_ex_tax: 6500, start_date: "2026-04-01", end_date: null, payer_member_id: null, status: active}
+      - input: ref('dim_plan')
+        rows:
+          - {plan_ref: "C26:P100", plan_key: standard_monthly}
+      - input: ref('xref_member')
+        rows:
+          - {source: C, source_member_id: "7", member_key: K7}
+          - {source: C, source_member_id: "8", member_key: K8}
+    expect:
+      rows:
+        - {contract_id: K1, member_id: 7, member_key: K7, valid_from: "2026-04-01 00:00:00+00", valid_to: "2026-04-02 00:00:00+00", is_current: false}
+        - {contract_id: K1, member_id: 8, member_key: K8, valid_from: "2026-04-02 00:00:00+00", valid_to: null, is_current: true}

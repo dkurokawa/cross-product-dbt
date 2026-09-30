@@ -9,8 +9,8 @@ with log as (
 
     select
         c.*,
-        {{ row_hash(['plan_ref', 'monthly_fee_tax_incl', 'monthly_fee_ex_tax', 'start_date',
-                     'end_date', 'payer_member_id', 'status']) }} as attribute_hash
+        {{ row_hash(['member_id', 'plan_ref', 'monthly_fee_tax_incl', 'monthly_fee_ex_tax',
+                     'start_date', 'end_date', 'payer_member_id', 'status']) }} as attribute_hash
     from {{ ref('int_c_contract_log') }} as c
 
 ),
