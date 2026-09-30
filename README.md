@@ -81,7 +81,13 @@ flowchart LR
   every product (`analyst`, `privacy_officer`) get the cross-product person and household
   tables. A product role gets, under the same names, tables built from its own product's records
   alone: no attribute is taken from another product, there are no cross-product flags or counts,
-  and reference tables such as `dim_plan` hold only its own codes.
+  and reference tables such as `dim_plan` hold only its own codes. The keys in those tables
+  (`member_key`, `household_key`) are product-scoped pseudonyms, `sha256(product || ':' || key)`,
+  computed in SQL: they join within the product but match no other product's key and no
+  canonical key. They have to be, because a canonical key next to a product's own id, or shared
+  between two product roles, would let them compare notes (for D, whose own id is a hash of
+  phone and kana, the difference would show which customers were matched to another product).
+  A derived-hash id like D's is dropped from that product's tables.
 * **Deleted records.** A record deleted in its source (C `op = D`, B logical delete) contributes
   nothing downstream: no attributes, no product flag, no sensitive text. A person with no live
   record is not in `dim_member` or in any access table. The number of such records is reported
@@ -132,7 +138,7 @@ tests), one database file per role, sample gateway calls and the audit models, s
 
 ```text
 ingest: 3585 files landed, 5 quarantined -> build/lake
-Done. PASS=310 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=310
+Done. PASS=311 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=311
 build-roles: analyst: 19 tables
 audit log ok: the privacy officer's read and the analyst's attempt are both recorded
 metrics check: 0 problem(s)
@@ -214,13 +220,13 @@ audit_access_log where touched_sensitive"`.)
 
 ## Results
 
-Produced from a fresh clone at commit `4b64165` on 2026-09-30, on a Mac mini M4, with the seed and
+Produced from a fresh clone at commit `2e6093b` on 2026-09-30, on a Mac mini M4, with the seed and
 sizes of the default run (5,000 people, 12 months from 2025-10-01). Only documentation changed
 after that commit.
 
-**Run times.** `make demo` 86 s (including `dbt deps`); `dbt build` alone 11.1 s for 310 nodes
-(1 seed, 167 models, 127 data tests, 15 unit tests); `make test` 45 s wall time (199 tests,
-coverage 98.70%).
+**Run times.** `make demo` 75 s (including `dbt deps`); `dbt build` alone 8.6 s for 311 nodes
+(1 seed, 167 models, 128 data tests, 15 unit tests); `make test` 45 s wall time (203 tests,
+coverage 98.71%).
 
 **Landing.** 3,585 files landed (A 1,874 files / 111,831 rows; B 106 / 1,007,313; C 1,131 /
 47,289; D 457 / 3,618; E 12 / 1,093; KPI files 5 / 192). 5 files were quarantined, one per source,
@@ -319,6 +325,12 @@ Why the seven "not comparable" rows are not tested:
 * **The principal is self-declared.** There is no authentication in this template. The audit log
   records what the caller said. On BigQuery the IAM principal in `INFORMATION_SCHEMA.JOBS` is the
   trustworthy counterpart.
+* **`platform scan` reads the first 100 rows of every landed file.** It catches an undeclared
+  personal-data column and a mis-declared one (declared weaker than detected), wherever it
+  appears in the data. It does not catch values deliberately placed further down a file.
+* **Product roles see pseudonymous keys.** See the access layer above: canonical keys would let
+  two product roles, or a product and the cross-product view, be linked. The analyst and the
+  privacy officer keep canonical keys.
 * **The sqlglot check is heuristic.** It stops the obvious things and produces useful audit
   records, but a parser can have gaps. The guarantees are the other two layers: the read-only
   database with external access off and its configuration locked, and the per-role file that
@@ -394,7 +406,8 @@ E: 法人営業の表（列名がゆれる CSV）。ゆれはすべてわざと�
   落とします。
 * 見せ方は「隠す → 伏せて見せる → コピー」の順です。要配慮の列は制限ロールのテーブルに存在せず、直接識別子
   はメールのドメイン・電話の末尾 4 桁・生年・氏名の先頭 1 文字に伏せます。プロダクトごとのロールは、そのプロ
-  ダクト自身の記録だけから作った表を受け取り（他プロダクトの値や横断のフラグは入りません）、元のシステムで
+  ダクト自身の記録だけから作った表を受け取り（他プロダクトの値や横断のフラグは入らず、キーも製品ごとの
+  仮名になります）、元のシステムで
   削除された記録（C の `op = D`、B の論理削除）は下流に一切出ません。
 * 防御は独立した 3 層です: sqlglot による SQL の検査／`read_only` + 外部アクセス無効 + 設定ロックの
   DuckDB／ロールごとに分けたデータベースファイル（見せない表がファイルに存在しない）。
@@ -404,8 +417,8 @@ E: 法人営業の表（列名がゆれる CSV）。ゆれはすべてわざと�
 * オーケストレーションは Makefile と Python の CLI のみ。dbt のパッケージは dbt_utils だけです。
 
 **使い方。** `uv sync --all-groups` のあと `make demo`（取り込み → dbt build → ロール別 DB → 監査 → ガード
-→ カタログ → MCP スモークテスト。手元の Mac mini M4 で約 86 秒）。上の「Results」節に、コミット
-`4b64165` で実行した結果（突き合わせ表、件数、実行時間）を載せています。
+→ カタログ → MCP スモークテスト。手元の Mac mini M4 で約 75 秒）。上の「Results」節に、コミット
+`2e6093b` で実行した結果（突き合わせ表、件数、実行時間）を載せています。
 
 **正直な限界。**
 
@@ -421,6 +434,8 @@ E: 法人営業の表（列名がゆれる CSV）。ゆれはすべてわざと�
   `--role` を渡せ、`build/warehouse/*.duckdb` を直接開けます。本番ではロールを認証済みの ID から決め、ファイ
   ルとウェアハウスに権限を設定する前提です（BigQuery なら IAM と authorized view）。sqlglot の検査は
   ヒューリスティックで、保証はデータベース層とロール別ファイルの層が担います。
+* `platform scan` は各ファイルの先頭 100 行を読みます。宣言漏れの列や弱く宣言された列は見つけますが、
+  ファイルの奥に意図的に置かれた値は見つけられません。
 * 指標は期間中のすべての月・すべてのプロダクトスコープについて行を出します（活動がなければ 0）。
   `churned_members` の最初の月は、比較する前の期間がないため 0 です。
 * BigQuery は CI ではコンパイルのみ（偽のサービスアカウント鍵、接続なし）で、実プロジェクトでは未実行です。
