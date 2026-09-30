@@ -136,7 +136,7 @@ def test_undecodable_d_file_is_quarantined(tmp_path: Path) -> None:
 @pytest.mark.parametrize("name", ["identity_stats", "quarantine_log", "landing_log"])
 def test_meta_tables_exist_even_when_empty(tmp_path: Path, name: str) -> None:
     Landing(tmp_path / "_incoming", tmp_path, TEST_SALT.encode()).run()
-    assert (tmp_path / "_meta" / name / "part-000.parquet").exists()
+    assert len(list((tmp_path / "_meta" / name).glob("run-*.parquet"))) == 1
 
 
 def test_landing_log_counts_files_per_partition(lake: IngestResult) -> None:
@@ -144,3 +144,25 @@ def test_landing_log_counts_files_per_partition(lake: IngestResult) -> None:
     assert int(log["files_landed"].sum()) == sum(lake.report.files_landed.values())
     e = log[(log["source"] == "E") & (log["partition_date"] == "2026-04")]
     assert int(e["files_landed"].sum()) == 1  # the _v2 file next to it was quarantined
+
+
+def test_a_later_run_adds_to_the_landing_history_instead_of_replacing_it(tmp_path: Path) -> None:
+    """`platform ingest --no-generate` on an existing lake used to erase the earlier meta tables."""
+    from cross_product_platform.generators.run import generate_all
+    from cross_product_platform.ingest import run_ingest
+
+    from .conftest import small_config
+
+    cfg = small_config(n_persons=80, months=2)
+    run_ingest(cfg, tmp_path)
+    first = {str(p) for p in (tmp_path / "_meta").rglob("run-*.parquet")}
+    assert len(first) == 4  # identity_stats, quarantine_log, landing_log, period
+    generate_all(cfg, tmp_path / "_incoming")
+    run_ingest(cfg, tmp_path, generate=False)
+    for name in ("identity_stats", "quarantine_log", "landing_log", "period"):
+        files = sorted((tmp_path / "_meta" / name).glob("run-*.parquet"))
+        assert len(files) == 2, name
+        runs = {str(pd.read_parquet(f)["run_id"].iloc[0]) for f in files}
+        assert len(runs) == 2, name
+    log = pd.read_parquet(tmp_path / "_meta" / "quarantine_log")
+    assert log["run_id"].nunique() == 2 and len(log) == 10  # both runs' 5 quarantined files

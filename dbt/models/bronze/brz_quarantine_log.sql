@@ -1,5 +1,6 @@
 -- Files moved to quarantine by the landing step (never silently dropped).
 select
+    run_id,
     source,
     dataset,
     file,

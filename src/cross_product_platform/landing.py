@@ -13,10 +13,11 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import uuid
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -135,11 +136,19 @@ class Landing:
     """Lands one incoming tree into a lake root."""
 
     def __init__(
-        self, incoming: Path, root: Path, salt: bytes, now: datetime | None = None
+        self,
+        incoming: Path,
+        root: Path,
+        salt: bytes,
+        now: datetime | None = None,
+        period: tuple[date, date] | None = None,
     ) -> None:
         self.incoming = incoming
         self.root = root
         self.now = now or datetime.now(UTC)
+        #: the first and last day the data covers (from the generator config)
+        self.period = period
+        self.run_id = f"{self.now:%Y%m%dT%H%M%S%f}Z-{uuid.uuid4().hex[:6]}"
         self.report = LandingReport()
         self._keys = _KeyCache(salt)
         self._aliases = load_aliases()
@@ -372,14 +381,25 @@ class Landing:
                 "rows_landed": "int64",
             }
         )
-        for name, frame in (
+        tables = [
             ("identity_stats", stats),
             ("quarantine_log", quarantine),
             ("landing_log", landing),
-        ):
+        ]
+        if self.period is not None:
+            period = pd.DataFrame(
+                {"period_start": [self.period[0]], "period_end": [self.period[1]]}
+            )
+            tables.append(("period", period))
+        for name, frame in tables:
+            # One file per run: an earlier run's history is never overwritten (a later
+            # `--no-generate` run adds to it). Downstream models read every file and can tell
+            # the runs apart by run_id.
+            frame = frame.copy()
+            frame.insert(0, "run_id", self.run_id)
             target = self.root / "_meta" / name
             target.mkdir(parents=True, exist_ok=True)
-            frame.to_parquet(target / "part-000.parquet", index=False)
+            frame.to_parquet(target / f"run-{self.run_id}.parquet", index=False)
 
     def _remove_empty_dirs(self, top: Path) -> None:
         for directory in sorted((p for p in top.rglob("*") if p.is_dir()), reverse=True):

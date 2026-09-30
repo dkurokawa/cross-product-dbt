@@ -54,5 +54,5 @@ def run_ingest(
     incoming = root / "_incoming"
     if generate:
         generate_all(cfg, incoming)
-    report = Landing(incoming, root, salt).run()
+    report = Landing(incoming, root, salt, period=(cfg.start, cfg.end)).run()
     return IngestResult(report=report, root=root)

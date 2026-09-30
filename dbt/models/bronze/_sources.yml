@@ -726,6 +726,11 @@ sources:
         config:
           meta:
             external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/_meta/landing_log/*.parquet')"
+      - name: period
+        description: "The first and last day the landed data covers, one row per landing run."
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/_meta/period/*.parquet')"
 
   - name: audit
     description: "The query gateway's audit events (eventlake), one event per call. Written after the first dbt build."

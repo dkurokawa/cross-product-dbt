@@ -1,5 +1,6 @@
 -- Accepted files per source, dataset and partition, as recorded by the landing step.
 select
+    run_id,
     source,
     dataset,
     partition_date,
