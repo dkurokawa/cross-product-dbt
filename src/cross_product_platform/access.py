@@ -75,6 +75,8 @@ class TableRule:
     products: tuple[str, ...] = ()
     #: only these roles get the table (empty = every role the audience allows)
     roles: tuple[str, ...] = ()
+    #: dbt tags of the generated access models (``audit`` = rebuilt after the gateway ran)
+    tags: tuple[str, ...] = ()
 
     @property
     def logical(self) -> str:
@@ -133,6 +135,7 @@ def _table_rule(raw: dict[str, Any]) -> TableRule:
         audience=audience,
         products=tuple(str(p) for p in raw.get("products", [])),
         roles=tuple(str(r) for r in raw.get("roles", [])),
+        tags=tuple(str(t) for t in raw.get("tags", [])),
     )
 
 
@@ -262,14 +265,17 @@ def _visible(role: Role, columns: list[ColumnInfo]) -> list[tuple[ColumnInfo, st
     return out
 
 
-def _sql(role: Role, table: str, columns: list[ColumnInfo], where: str) -> str:
+def _sql(
+    role: Role, table: str, columns: list[ColumnInfo], where: str, tags: tuple[str, ...] = ()
+) -> str:
     items = []
     for _, name, expr in _visible(role, columns):
         items.append(f"    {expr}" if expr == name else f"    {expr} as {name}")
     body = "select\n" + ",\n".join(items) + f"\nfrom {{{{ ref('{table}') }}}}"
     if where:
         body += f"\n{where}"
-    return f"-- {HEADER}\n{body}\n"
+    config = f"{{{{ config(tags=[{', '.join(repr(t) for t in tags)}]) }}}}\n\n" if tags else ""
+    return f"-- {HEADER}\n{config}{body}\n"
 
 
 MASK_TEXT: Final = {
@@ -335,7 +341,7 @@ def generate_access_files(policy: Policy, columns: dict[str, list[ColumnInfo]]) 
             table = rule.logical
             cols = columns[rule.name]
             files[f"{ACCESS_DIR}/{model_name(role, table)}.sql"] = _sql(
-                role, rule.name, cols, where
+                role, rule.name, cols, where, rule.tags
             )
             visible = _visible(role, cols)
             granted[table] = {

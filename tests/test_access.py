@@ -292,3 +292,14 @@ def test_the_sales_owner_is_an_employee_name_and_is_masked_for_restricted_roles(
         assert "sales_owner_initial" in columns and "sales_owner" not in columns, role
     officer = allow["roles"]["privacy_officer"]["tables"]["dim_account"]["columns"]
     assert "sales_owner" in officer
+
+
+def test_the_audit_log_is_readable_by_the_privacy_officer_only(files: dict[str, str]) -> None:
+    allow = json.loads(files["policies/gateway_allowlist.json"])
+    for role, body in allow["roles"].items():
+        assert ("audit_access_log" in body["tables"]) == (role == "privacy_officer"), role
+    sql = files["dbt/models/access/acc_privacy_officer__audit_access_log.sql"]
+    assert "config(tags=['audit'])" in sql  # rebuilt after the gateway has written events
+    assert "audit_access_log" not in "".join(
+        v for k, v in files.items() if k.endswith(".sql") and "privacy_officer" not in k
+    )

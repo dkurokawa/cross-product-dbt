@@ -56,6 +56,9 @@ tables:
   - {name: fct_payment, layer: silver, row_scope: {kind: column, column: source}}
   - {name: fct_activity, layer: silver, row_scope: {kind: column, column: source}}
   - {name: scd_contract, layer: silver, row_scope: {kind: fixed, product: C}}
+  # The audit log of the gateway: only the privacy officer reads it (and reading it is audited
+  # like any other query). Tagged `audit` so it is rebuilt after the gateway has written events.
+  - {name: audit_access_log, layer: gold, roles: [privacy_officer], tags: [audit], row_scope: {kind: none}}
   - {name: identity_quality, layer: gold, row_scope: {kind: column, column: source}}
   - {name: ingest_quality_daily, layer: gold, row_scope: {kind: column, column: source}}
 

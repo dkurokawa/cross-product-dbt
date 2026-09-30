@@ -15,10 +15,10 @@ export PLATFORM_AUDIT_ROOT := $(abspath build/audit)
 DBT := uv run dbt
 DBT_ARGS := --project-dir dbt --profiles-dir dbt
 
-.PHONY: demo ingest deps dbt-build roles audit catalog mcp-smoke freshness docs checks generate test lint lint-py lint-sql lint-dialect \
+.PHONY: demo ingest deps dbt-build roles roles-refresh audit audit-query catalog mcp-smoke freshness docs checks generate test lint lint-py lint-sql lint-dialect \
 	bq-compile anomaly-check unmapped-check
 
-demo: ingest deps dbt-build roles audit freshness docs checks catalog mcp-smoke
+demo: ingest deps dbt-build roles audit roles-refresh audit-query freshness docs checks catalog mcp-smoke
 
 ingest:
 	uv run platform ingest --root $(LAKE) --overwrite
@@ -34,15 +34,22 @@ dbt-build:
 	$(DBT) build $(DBT_ARGS)
 
 # F6 layer 4: one database file per role, holding only that role's access tables.
-roles:
+roles roles-refresh:
 	uv run platform build-roles --warehouse $(WAREHOUSE) --out-dir $(dir $(WAREHOUSE))
 
-# Sample gateway calls -> audit lake -> rebuild the audit models -> assertions on
-# gold.audit_access_log.
+# Sample gateway calls -> audit lake -> rebuild the audit models (and the privacy officer's copy
+# of the log) -> assertions on gold.audit_access_log. `roles-refresh` (same recipe as
+# `roles`, a separate target because make runs a target only once) rebuilds the role databases
+# afterwards so that they contain the log.
 audit:
 	uv run python scripts/audit_demo.py write
 	$(DBT) build $(DBT_ARGS) --select tag:audit
 	uv run python scripts/audit_demo.py check
+
+# The privacy officer reads the audit log through the gateway (and that read is audited too).
+audit-query:
+	uv run platform query --role privacy_officer --principal audrey \
+		"select principal, role, outcome, touched_sensitive from audit_access_log where touched_sensitive"
 
 catalog:
 	uv run platform catalog build

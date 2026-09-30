@@ -3492,6 +3492,54 @@
             "is_deleted": "True for the version that records a delete."
           }
         },
+        "audit_access_log": {
+          "model": "acc_privacy_officer__audit_access_log",
+          "columns": [
+            "event_id",
+            "occurred_at",
+            "outcome",
+            "principal",
+            "role",
+            "sql_hash",
+            "sql_normalized",
+            "referenced_tables",
+            "referenced_columns",
+            "sensitive_columns",
+            "touched_sensitive",
+            "row_count",
+            "deny_reason"
+          ],
+          "pii": {
+            "event_id": "none",
+            "occurred_at": "none",
+            "outcome": "none",
+            "principal": "quasi",
+            "role": "none",
+            "sql_hash": "none",
+            "sql_normalized": "none",
+            "referenced_tables": "none",
+            "referenced_columns": "none",
+            "sensitive_columns": "none",
+            "touched_sensitive": "none",
+            "row_count": "none",
+            "deny_reason": "none"
+          },
+          "descriptions": {
+            "event_id": "Identifier of the audit event.",
+            "occurred_at": "When the gateway answered (UTC).",
+            "outcome": "executed or denied.",
+            "principal": "Who asked, as declared by the caller (not authenticated).",
+            "role": "Role the query ran as.",
+            "sql_hash": "SHA-256 of the normalized SQL; the same query shape has the same hash.",
+            "sql_normalized": "The SQL with literals replaced by placeholders.",
+            "referenced_tables": "Tables the query used.",
+            "referenced_columns": "Columns the query used, as table.column.",
+            "sensitive_columns": "Columns declared sensitive that the query mentions.",
+            "touched_sensitive": "True if the query mentions a sensitive column, even if it was refused.",
+            "row_count": "Rows returned; empty for denied queries.",
+            "deny_reason": "Why the gateway refused the query; empty for executed queries."
+          }
+        },
         "identity_quality": {
           "model": "acc_privacy_officer__identity_quality",
           "columns": [

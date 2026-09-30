@@ -252,7 +252,7 @@ def test_build_role_databases_validates_the_allowlist(tmp_path: Path) -> None:
 def test_rebuilding_role_databases_replaces_old_files(env: Env) -> None:
     allow = load_allowlist(env.allowlist_path)
     built = build_role_databases(allow, env.root / "platform.duckdb", env.warehouse_dir)
-    assert built == {"analyst": 3, "product_a": 1, "privacy_officer": 1}
+    assert built == {"analyst": 3, "product_a": 1, "privacy_officer": 2}
 
 
 def test_cli_query_and_build_roles(env: Env, capsys: pytest.CaptureFixture[str]) -> None:
@@ -360,3 +360,16 @@ def test_a_role_database_that_lacks_an_allowlisted_table_is_refused(env: Env) ->
     con.close()
     with pytest.raises(GatewayError, match="lacks allowlisted tables"):
         env.gateway("analyst")
+
+
+def test_only_the_privacy_officer_can_read_the_audit_log_and_the_read_is_audited(env: Env) -> None:
+    result = env.gateway("privacy_officer", "audrey").query(
+        "select principal, outcome from audit_access_log where touched_sensitive"
+    )
+    assert result.rows == [("nosy", "denied")]
+    (event,) = env.audit("query_executed")
+    assert event["referenced_tables"] == ["audit_access_log"] and event["principal"] == "audrey"
+    with pytest.raises(QueryDeniedError, match="not available"):
+        env.gateway("analyst", "ada").query("select * from audit_access_log")
+    with pytest.raises(QueryDeniedError):
+        env.gateway("product_a", "pat").query("select * from audit_access_log")

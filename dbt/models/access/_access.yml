@@ -4435,6 +4435,74 @@ models:
         config:
           meta:
             pii: none
+  - name: acc_privacy_officer__audit_access_log
+    description: "Role privacy_officer: access copy of audit_access_log."
+    columns:
+      - name: event_id
+        description: "Identifier of the audit event."
+        config:
+          meta:
+            pii: none
+      - name: occurred_at
+        description: "When the gateway answered (UTC)."
+        config:
+          meta:
+            pii: none
+      - name: outcome
+        description: "executed or denied."
+        config:
+          meta:
+            pii: none
+      - name: principal
+        description: "Who asked, as declared by the caller (not authenticated)."
+        config:
+          meta:
+            pii: quasi
+      - name: role
+        description: "Role the query ran as."
+        config:
+          meta:
+            pii: none
+      - name: sql_hash
+        description: "SHA-256 of the normalized SQL; the same query shape has the same hash."
+        config:
+          meta:
+            pii: none
+      - name: sql_normalized
+        description: "The SQL with literals replaced by placeholders."
+        config:
+          meta:
+            pii: none
+      - name: referenced_tables
+        description: "Tables the query used."
+        config:
+          meta:
+            pii: none
+      - name: referenced_columns
+        description: "Columns the query used, as table.column."
+        config:
+          meta:
+            pii: none
+      - name: sensitive_columns
+        description: "Columns declared sensitive that the query mentions."
+        config:
+          meta:
+            pii: none
+      - name: touched_sensitive
+        description: "True if the query mentions a sensitive column, even if it was refused."
+        config:
+          meta:
+            pii: none
+      - name: row_count
+        description: "Rows returned; empty for denied queries."
+        config:
+          meta:
+            pii: none
+      - name: deny_reason
+        description: "Why the gateway refused the query; empty for executed queries."
+        config:
+          meta:
+            pii: none
   - name: acc_privacy_officer__identity_quality
     description: "Role privacy_officer: access copy of identity_quality."
     columns:
