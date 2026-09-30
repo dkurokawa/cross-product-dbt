@@ -1,0 +1,14 @@
+plan_ref,source,generation,source_plan_code,plan_key,plan_name,billing_period_months
+C25:STD,C,FY2025,STD,standard_monthly,Standard (monthly),1
+C25:PRM,C,FY2025,PRM,premium_monthly,Premium (monthly),1
+C25:STU,C,FY2025,STU,student_monthly,Student (monthly),1
+C25:FAM,C,FY2025,FAM,family_monthly,Family (monthly),1
+C26:P100,C,FY2026,P100,standard_monthly,Standard (monthly),1
+C26:P200,C,FY2026,P200,premium_monthly,Premium (monthly),1
+C26:P150,C,FY2026,P150,student_monthly,Student (monthly),1
+C26:P300,C,FY2026,P300,family_monthly,Family (monthly),1
+C26:P400,C,FY2026,P400,night_monthly,Night (monthly),1
+D:M1,D,,M1,standard_monthly,Standard (monthly),1
+D:M2,D,,M2,premium_monthly,Premium (monthly),1
+D:QK,D,,QK,standard_quarterly,Standard (quarterly),3
+D:YR,D,,YR,standard_annual,Standard (annual),12

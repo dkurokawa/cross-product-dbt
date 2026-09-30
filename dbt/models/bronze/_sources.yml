@@ -1,0 +1,104 @@
+version: 2
+
+# Landing-area sources, read in place with DuckDB's table functions (dbt-duckdb
+# `external_location`). {{ env_var('PLATFORM_LANDING_ROOT') }} is the lake root written by
+# `platform ingest`. On other warehouses these become ordinary tables loaded by a
+# separate step, so the models below never mention a table function.
+
+sources:
+  - name: a
+    description: "Product A: consumer app events, written with eventlake."
+    schema: raw_a
+    tables:
+      - name: member_registered
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/member_registered/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+      - name: app_opened
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/app_opened/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+      - name: workout_completed
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/workout_completed/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+      - name: purchase_made
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/A/purchase_made/dt=*/part-*.parquet', union_by_name=true, hive_partitioning=true, filename=true)"
+
+  - name: b
+    description: "Product B: reservation SaaS, full snapshots."
+    schema: raw_b
+    tables:
+      - name: customers
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/B/customers/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+      - name: bookings
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/B/bookings/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+
+  - name: c
+    description: "Product C: gym back-office database, CDC log."
+    schema: raw_c
+    tables:
+      - name: members
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/members/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+      - name: contracts_fy2025
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/contracts_fy2025/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+      - name: contracts_fy2026
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/contracts_fy2026/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+      - name: visits
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/C/visits/dt=*/*.parquet', union_by_name=true, hive_partitioning=true)"
+
+  - name: d
+    description: "Product D: acquired billing package (CSV, decoded to UTF-8 at landing)."
+    schema: raw_d
+    tables:
+      - name: invoices
+        config:
+          meta:
+            external_location: "read_csv('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/D/invoices/dt=*/*.csv', header=true, all_varchar=true, hive_partitioning=true)"
+      - name: refunds
+        config:
+          meta:
+            external_location: "read_csv('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/D/refunds/dt=*/*.csv', header=true, all_varchar=true, hive_partitioning=true)"
+
+  - name: e
+    description: "Product E: corporate-sales sheet exported monthly (column names canonicalized at landing)."
+    schema: raw_e
+    tables:
+      - name: accounts
+        config:
+          meta:
+            external_location: "read_csv('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/E/accounts/month=*/*.csv', header=true, all_varchar=true, hive_partitioning=true, hive_types_autocast=false)"
+
+  - name: meta
+    description: "Tables the landing step writes about itself and about the products' own KPIs."
+    schema: raw_meta
+    tables:
+      - name: reported_kpis
+        description: "KPIs each product reports for itself (compared with the canonical definitions later)."
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/reported_kpis/*/kpis.parquet')"
+      - name: identity_stats
+        description: "How many source members were matched by which key method (the unmatched ones are source_local)."
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/_meta/identity_stats/*.parquet')"
+      - name: quarantine_log
+        description: "Files the landing step moved to quarantine."
+        config:
+          meta:
+            external_location: "read_parquet('{{ env_var('PLATFORM_LANDING_ROOT', 'build/lake') }}/_meta/quarantine_log/*.parquet')"

@@ -1,0 +1,12 @@
+version: 2
+
+seeds:
+  - name: dim_plan
+    description: >
+      Seed mapping every plan code of every source and table generation (C FY2025, C FY2026,
+      D) to one plan system. A code that is not listed here fails the relationships tests below.
+    columns:
+      - name: plan_ref
+        data_tests: [unique, not_null]
+      - name: plan_key
+        data_tests: [not_null]

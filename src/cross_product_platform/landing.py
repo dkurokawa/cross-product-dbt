@@ -40,7 +40,7 @@ class QuarantinedFile:
     source: str
     dataset: str
     file: str
-    partition: str
+    partition_date: str
     stage: str
     n_violations: int
     reason: str
@@ -322,14 +322,19 @@ class Landing:
         quarantine = pd.DataFrame(
             [q.__dict__ | {"quarantined_at": self.now} for q in self.report.quarantined],
             columns=[
-                "source", "dataset", "file", "partition", "stage", "n_violations", "reason",
+                "source", "dataset", "file", "partition_date", "stage", "n_violations", "reason",
                 "quarantined_at",
             ],
         )  # fmt: skip
         quarantine = quarantine.astype(
             {
-                "source": "object", "dataset": "object", "file": "object", "partition": "object",
-                "stage": "object", "n_violations": "int64", "reason": "object",
+                "source": "object",
+                "dataset": "object",
+                "file": "object",
+                "partition_date": "object",
+                "stage": "object",
+                "n_violations": "int64",
+                "reason": "object",
             }
         )  # fmt: skip
         quarantine["quarantined_at"] = pd.Series(

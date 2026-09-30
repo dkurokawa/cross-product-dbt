@@ -1,0 +1,42 @@
+[sqlfluff]
+dialect = duckdb
+templater = jinja
+max_line_length = 100
+# Models are linted as written (Jinja rendered with stand-ins for dbt), not as compiled.
+
+[sqlfluff:indentation]
+indented_joins = False
+indented_using_on = True
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = lower
+
+# Stand-ins for dbt's context: ref/source/config/var come from sqlfluff's dbt builtins; the
+# project's own macros (dbt/macros/portable.sql) are replaced by neutral one-line bodies,
+# because the real ones dispatch on the adapter, which plain Jinja does not have.
+[sqlfluff:templater:jinja:macros]
+col = {% macro col(name) %}"{{ name }}"{% endmacro %}
+to_utc_from_jst = {% macro to_utc_from_jst(expr) %}({{ expr }}){% endmacro %}
+to_date_jst = {% macro to_date_jst(expr) %}cast({{ expr }} as date){% endmacro %}
+parse_date_slash = {% macro parse_date_slash(expr) %}cast({{ expr }} as date){% endmacro %}
+to_utc_timestamp = {% macro to_utc_timestamp(expr) %}cast({{ expr }} as timestamp){% endmacro %}
+normalize_digits = {% macro normalize_digits(expr) %}replace({{ expr }}, ',', ''){% endmacro %}
+to_int = {% macro to_int(expr) %}cast({{ expr }} as bigint){% endmacro %}
+to_decimal = {% macro to_decimal(expr) %}cast({{ expr }} as numeric){% endmacro %}
+to_str = {% macro to_str(expr) %}cast({{ expr }} as varchar){% endmacro %}
+to_bigint = {% macro to_bigint(expr) %}cast({{ expr }} as bigint){% endmacro %}
+row_hash = {% macro row_hash(columns) %}md5(concat({{ columns | join(', ') }})){% endmacro %}
+
+# `source`, `name`, `value`, `file`, `partition_date`... are ordinary column names in every
+# warehouse targeted here (none of them is reserved in DuckDB or BigQuery).
+[sqlfluff:rules:references.keywords]
+ignore_words = source,name,value,file,definition,status,reason,stage,product,dataset

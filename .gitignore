@@ -16,3 +16,4 @@ dbt/logs/
 *.duckdb.wal
 *.pem
 *-key.json
+dbt/.user.yml

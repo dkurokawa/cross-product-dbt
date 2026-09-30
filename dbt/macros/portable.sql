@@ -1,0 +1,97 @@
+{#
+  Dialect-specific SQL lives ONLY in this file (design section 6). Models call these
+  macros; each one dispatches on the adapter. Adding a warehouse means adding one
+  `<adapter>__<name>` implementation per macro here, nothing in the models.
+#}
+
+{# Quoted identifier (the acquired billing system's headers are Japanese). #}
+{% macro col(name) %}{{ adapter.quote(name) }}{% endmacro %}
+
+{# --- time ---------------------------------------------------------------------- #}
+
+{# A naive timestamp written in Tokyo local time -> an absolute (UTC) timestamp. #}
+{% macro to_utc_from_jst(expr) %}
+    {{ return(adapter.dispatch('to_utc_from_jst', 'platform')(expr)) }}
+{% endmacro %}
+
+{% macro default__to_utc_from_jst(expr) %}
+    {{ exceptions.raise_compiler_error("to_utc_from_jst is not implemented for this adapter") }}
+{% endmacro %}
+
+{% macro duckdb__to_utc_from_jst(expr) %}(({{ expr }}) at time zone 'Asia/Tokyo'){% endmacro %}
+
+{% macro bigquery__to_utc_from_jst(expr) %}timestamp({{ expr }}, 'Asia/Tokyo'){% endmacro %}
+
+{# An absolute timestamp -> the calendar date in Tokyo. #}
+{% macro to_date_jst(expr) %}
+    {{ return(adapter.dispatch('to_date_jst', 'platform')(expr)) }}
+{% endmacro %}
+
+{% macro default__to_date_jst(expr) %}
+    {{ exceptions.raise_compiler_error("to_date_jst is not implemented for this adapter") }}
+{% endmacro %}
+
+{% macro duckdb__to_date_jst(expr) %}cast(timezone('Asia/Tokyo', {{ expr }}) as date){% endmacro %}
+
+{% macro bigquery__to_date_jst(expr) %}date({{ expr }}, 'Asia/Tokyo'){% endmacro %}
+
+{# 'YYYY/MM/DD' text -> date (NULL when the text does not parse). #}
+{% macro parse_date_slash(expr) %}
+    {{ return(adapter.dispatch('parse_date_slash', 'platform')(expr)) }}
+{% endmacro %}
+
+{% macro default__parse_date_slash(expr) %}
+    {{ exceptions.raise_compiler_error("parse_date_slash is not implemented for this adapter") }}
+{% endmacro %}
+
+{% macro duckdb__parse_date_slash(expr) %}cast(try_strptime({{ expr }}, '%Y/%m/%d') as date){% endmacro %}
+
+{% macro bigquery__parse_date_slash(expr) %}safe.parse_date('%Y/%m/%d', {{ expr }}){% endmacro %}
+
+{# ISO text with an offset ('2026-09-30 11:36:08+00:00') -> an absolute timestamp. #}
+{% macro to_utc_timestamp(expr) %}
+    {{ return(adapter.dispatch('to_utc_timestamp', 'platform')(expr)) }}
+{% endmacro %}
+
+{% macro default__to_utc_timestamp(expr) %}
+    {{ exceptions.raise_compiler_error("to_utc_timestamp is not implemented for this adapter") }}
+{% endmacro %}
+
+{% macro duckdb__to_utc_timestamp(expr) %}cast({{ expr }} as timestamptz){% endmacro %}
+
+{% macro bigquery__to_utc_timestamp(expr) %}timestamp({{ expr }}){% endmacro %}
+
+{# --- numbers ------------------------------------------------------------------- #}
+
+{# Full-width digits -> ASCII, thousands separators dropped (sheet typing habits). #}
+{% macro normalize_digits(expr) %}
+    {{ return(adapter.dispatch('normalize_digits', 'platform')(expr)) }}
+{% endmacro %}
+
+{% macro default__normalize_digits(expr) %}translate({{ expr }}, '０１２３４５６７８９，,', '0123456789'){% endmacro %}
+
+{# Cast that yields NULL instead of an error when the text does not parse. #}
+{% macro try_cast(expr, type_name) %}
+    {{ return(adapter.dispatch('try_cast', 'platform')(expr, type_name)) }}
+{% endmacro %}
+
+{% macro default__try_cast(expr, type_name) %}{{ dbt.safe_cast(expr, type_name) }}{% endmacro %}
+
+{% macro duckdb__try_cast(expr, type_name) %}try_cast({{ expr }} as {{ type_name }}){% endmacro %}
+
+{# Text -> bigint, NULL when it is not a number ('—' placeholders stay NULL, never 0). #}
+{% macro to_int(expr) %}{{ platform.try_cast(expr, dbt.type_bigint()) }}{% endmacro %}
+
+{# Text -> exact decimal, NULL when it is not a number. #}
+{% macro to_decimal(expr) %}{{ platform.try_cast(expr, dbt.type_numeric()) }}{% endmacro %}
+
+{# --- keys ---------------------------------------------------------------------- #}
+
+{# Stable hash of several columns (NULL-safe); used to detect a real change in SCD2. #}
+{% macro row_hash(columns) %}{{ dbt_utils.generate_surrogate_key(columns) }}{% endmacro %}
+
+{# --- types --------------------------------------------------------------------- #}
+
+{% macro to_str(expr) %}cast({{ expr }} as {{ dbt.type_string() }}){% endmacro %}
+
+{% macro to_bigint(expr) %}cast({{ expr }} as {{ dbt.type_bigint() }}){% endmacro %}

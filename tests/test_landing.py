@@ -119,7 +119,7 @@ def test_unreadable_file_is_quarantined(tmp_path: Path) -> None:
     (broken / "snapshot.parquet").write_bytes(b"this is not parquet")
     report = Landing(incoming, tmp_path, TEST_SALT.encode()).run()
     (q,) = report.quarantined
-    assert (q.source, q.stage, q.partition) == ("B", "read", "2026-02-01")
+    assert (q.source, q.stage, q.partition_date) == ("B", "read", "2026-02-01")
     reason = json.loads(next((tmp_path / "quarantine").rglob("*.reason.json")).read_text("utf-8"))
     assert reason["violations"][0]["check"] in {"ArrowInvalid", "OSError", "ArrowException"}
 
